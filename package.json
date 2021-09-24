@@ -18,11 +18,11 @@
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
     "grpc": "^1.24.11",
+    "mysql2": "^2.3.0",
+    "typeorm": "^0.2.37",
     "uuid": "^8.3.2"
   },
   "scripts": {
-    "dev": "nodemon --watch src --ext 'ts,json' --exec 'ts-node' src",
-    "server": "ts-node server/index.ts",
-    "client": "ts-node client/index.ts"
+    "dev": "nodemon --watch src --ext 'ts,json' --exec 'ts-node' src"
   }
 }
