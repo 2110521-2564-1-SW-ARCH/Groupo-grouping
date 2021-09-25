@@ -1,25 +1,34 @@
 syntax ="proto3";
 
-service RestaurantService {
-    rpc GetAllMenu(Empty) returns (MenuList) {}
-    rpc Get (MenuId) returns (MenuItem){}
-    rpc Insert (MenuItem) returns (MenuItem) {}
-    rpc Update (MenuItem) returns (MenuItem) {}
-    rpc Remove (MenuId) returns (Empty) {}
+service GroupingService {
+    rpc GetBoards(Empty) returns (BoardList) {}
+    rpc GetBoard (BoardId) returns (Board){}
+    rpc InsertBoard (Board) returns (Board) {}
+    rpc UpdateBoard (Board) returns (Board) {}
+    rpc RemoveBoard (BoardId) returns (Empty) {}
 }
 
 message Empty{}
 
-message MenuItem {
+message User {
+    string id=1;
+}
+
+message Group {
+    int32 id=1;
+}
+
+message Board {
     string id =1;
     string name=2;
-    int32 price=3;
+    string description=3;
+    repeated User user=4;
 }
 
-message MenuList{
-    repeated MenuItem menu=1;
+message BoardList{
+    repeated Board Board=1;
 }
 
-message MenuId{
+message BoardId{
     string id=1;
 }
