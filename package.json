@@ -24,7 +24,8 @@
   },
   "scripts": {
     "dev": "nodemon --watch src --ext 'ts,json' --exec 'ts-node' src",
-    "server": "ts-node server/index.ts",
-    "client": "ts-node client/index.ts"
+    "start": "ts-node src",
+    "server": "ts-node src/server/index.ts",
+    "client": "ts-node src/client/index.ts"
   }
 }

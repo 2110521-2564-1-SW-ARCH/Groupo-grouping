@@ -4,7 +4,7 @@ import path from "path";
 import grpc from "grpc";
 import * as protoLoader from "@grpc/proto-loader";
 
-const PROTO_PATH = path.resolve(__dirname, "../groupo.proto");
+const PROTO_PATH = path.resolve(__dirname, "../../groupo.proto");
 
 var packageDefinition = protoLoader.loadSync(PROTO_PATH, {
   keepCase: true,
