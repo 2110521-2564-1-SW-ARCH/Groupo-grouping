@@ -109,12 +109,12 @@ const groupoProto: any = grpc.loadPackageDefinition(packageDefinition);
 
 const grpcServer = new grpc.Server();
 
-grpcServer.addService(groupoProto.GroupingService.service, {})
+grpcServer.addService(groupoProto.GroupingGRPCService.service, {})
 
 grpcServer.bindAsync("localhost:30043", grpc.ServerCredentials.createInsecure(), (err, port) => {
 	if (err) console.log(err);
 	else {
-		console.log(`Server running at http://localhost:${port}`);
+		console.log(`groupo-grouping (GRPC Server) is running on port ${port}`);
 		grpcServer.start();
 	}
 });

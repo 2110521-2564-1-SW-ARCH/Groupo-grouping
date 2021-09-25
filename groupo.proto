@@ -1,6 +1,6 @@
 syntax ="proto3";
 
-service GroupingService {
+service GroupingGRPCService {
     rpc GetBoards(Empty) returns (BoardList) {}
     rpc GetBoard (BoardId) returns (Board){}
     rpc InsertBoard (Board) returns (Board) {}
