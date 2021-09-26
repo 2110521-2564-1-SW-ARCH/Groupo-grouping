@@ -903,7 +903,7 @@ graceful-fs@^4.1.2:
 
 "groupo-shared-service@https://github.com/2110521-2564-1-SW-ARCH/Groupo-shared-services.git":
   version "1.0.0"
-  resolved "https://github.com/2110521-2564-1-SW-ARCH/Groupo-shared-services.git#9304f46050e935bf78c0e6bc2a8eb2d61ed0f232"
+  resolved "https://github.com/2110521-2564-1-SW-ARCH/Groupo-shared-services.git#977b45fc3f4a79fa8f84ec57e0badb777f24c8fc"
   dependencies:
     dayjs "^1.10.7"
     http-status-codes "^2.1.4"
