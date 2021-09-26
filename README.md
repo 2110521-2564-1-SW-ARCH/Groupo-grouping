@@ -16,4 +16,4 @@ to use these interface, `Authorization` header must be provided with `Bearer` to
 - `POST /board (CreateBoardRequest => EMPTY)`, to create new board
 
 
-- `POST /board/:boardID/invite (BoardInvitationRequest => EMPTY)`, to invite people to 
+- `POST /board/:boardID/invite (BoardInvitationRequest => EMPTY)`, to invite people to specific board 
