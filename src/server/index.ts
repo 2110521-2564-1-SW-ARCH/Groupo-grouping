@@ -1,7 +1,9 @@
-require("dotenv").config({ path: __dirname + "/../../.env" });
-import path from "path"
-import * as grpc from '@grpc/grpc-js'
-import * as protoLoader from '@grpc/proto-loader'
+import * as dotenv from "dotenv";
+dotenv.config({ path: __dirname + "/../../.env" });
+
+import path from "path";
+import * as grpc from '@grpc/grpc-js';
+import * as protoLoader from '@grpc/proto-loader';
 
 const PROTO_PATH = path.resolve(__dirname, "./groupo.proto");
 
