@@ -1,2 +1,2 @@
-require("./server")
 require("./client")
+require("./server")
