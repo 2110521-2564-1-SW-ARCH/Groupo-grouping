@@ -1,11 +1,19 @@
-# Groupo-chat
+## Grouping Service
 
-Use gRPC
+<hr>
 
-Dev: npm run dev
+### API Interface
 
-Start two in parallel: npm run start
+all interfaces are in `common-shared-service`.
 
-Server: npm run server
+##### Auth Required Interface
 
-Client: npm run client
+to use these interface, `Authorization` header must be provided with `Bearer` token
+
+- `GET /board (EMPTY => BoardResponse[])`, list board (including own and be member)
+
+
+- `POST /board (CreateBoardRequest => EMPTY)`, to create new board
+
+
+- `POST /board/:boardID/invite (BoardInvitationRequest => EMPTY)`, to invite people to 
