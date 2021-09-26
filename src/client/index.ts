@@ -22,5 +22,5 @@ app.use(handler);
 const port = process.env.APP_PORT || "8080";
 app.listen(port, () => {
     logger.info("start groupo-grouping successfully");
-    logger.field("application-port", port).info("groupo-groupoing is running");
+    logger.field("application-port", port).info("groupo-grouping is running");
 });
