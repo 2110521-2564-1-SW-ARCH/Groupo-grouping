@@ -6,6 +6,7 @@
   "author": "wongtawan",
   "license": "MIT",
   "devDependencies": {
+    "@types/cors": "^2.8.12",
     "@types/express": "^4.17.13",
     "@types/node": "^16.9.2",
     "nodemon": "^2.0.12",
@@ -19,14 +20,14 @@
     "cors": "^2.8.5",
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
+    "groupo-shared-service": "https://github.com/2110521-2564-1-SW-ARCH/Groupo-shared-services.git",
+    "http-status-codes": "^2.1.4",
     "mysql2": "^2.3.0",
     "typeorm": "^0.2.37",
     "uuid": "^8.3.2"
   },
   "scripts": {
     "dev": "nodemon --watch src --ext 'ts,json' --exec 'ts-node' src",
-    "start": "ts-node src",
-    "server": "ts-node src/server/index.ts",
-    "client": "ts-node src/client/index.ts"
+    "update-deps": "yarn add https://github.com/2110521-2564-1-SW-ARCH/Groupo-shared-services.git"
   }
 }

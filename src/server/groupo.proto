@@ -2,8 +2,9 @@ syntax ="proto3";
 
 service GroupingGRPCService {
     rpc ListenBoard (BoardId) returns (stream Board) {}
-    rpc GetBoard (BoardId) returns (Board){}
+    rpc GetBoard (BoardId) returns (Board) {}
     rpc NewBoard (BoardMetadata) returns (Board) {}
+    rpc NewGroup (BoardId) returns (Group) {}
     rpc UpdateBoard (BoardDelta) returns (Board) {}
     rpc RemoveBoard (BoardId) returns (Empty) {}
 }
