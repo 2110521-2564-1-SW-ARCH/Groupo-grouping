@@ -27,7 +27,7 @@
     "uuid": "^8.3.2"
   },
   "scripts": {
-    "dev": "nodemon --watch src --ext 'ts,json' --exec 'ts-node' src",
+    "dev": "nodemon --watch src --ext \"ts,json\" --exec \"ts-node\" src",
     "update-deps": "yarn add https://github.com/2110521-2564-1-SW-ARCH/Groupo-shared-services.git"
   }
 }

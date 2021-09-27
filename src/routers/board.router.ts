@@ -5,6 +5,7 @@ const boardRouter = Router();
 
 boardRouter.get("/", BoardController.listBoard);
 boardRouter.post("/", BoardController.createBoard);
+boardRouter.get("/:boardID", BoardController.getBoard);
 boardRouter.post("/:boardID/invite", BoardController.addMember);
 
 export default boardRouter;

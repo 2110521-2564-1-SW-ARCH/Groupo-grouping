@@ -2,6 +2,7 @@ import {Column, Entity, OneToMany, PrimaryGeneratedColumn} from "typeorm";
 import {Group} from "./group.model";
 import {Tag} from "./tag.model";
 import {Member} from "./member.model";
+import {BoardResponse} from "groupo-shared-service/apiutils/messages";
 
 @Entity("board")
 export class Board {
@@ -24,5 +25,17 @@ export class Board {
         this.owner = owner;
         this.name = name;
         this.totalGroup = totalGroup;
+    }
+
+    response(isAssign: boolean = false): BoardResponse {
+        return {
+            boardID: this.boardID,
+            isAssign,
+            members: this.members.map(m => m.email),
+            name: this.name,
+            owner: this.owner,
+            totalGroup: this.totalGroup,
+            totalMember: this.members.length,
+        };
     }
 }

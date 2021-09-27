@@ -2,8 +2,10 @@ import express from "express";
 import {catcher} from "groupo-shared-service/apiutils/errors";
 import * as BoardService from "../services/board.service";
 import {
-    BoardInvitationRequest, BoardResponse,
+    BoardInvitationRequest,
+    BoardResponse,
     CreateBoardRequest,
+    CreateBoardResponse,
     json,
     newAPIResponse
 } from "groupo-shared-service/apiutils/messages";
@@ -15,9 +17,9 @@ export const createBoard: express.Handler = catcher(async (req: express.Request,
 
     const {name, totalGroup, tags} = req.body as CreateBoardRequest;
 
-    await BoardService.createBoard(email, name, totalGroup, tags);
+    const boardID = await BoardService.createBoard(email, name, totalGroup, tags);
 
-    json(res, newAPIResponse<string>(StatusCodes.NO_CONTENT, ""));
+    json(res, newAPIResponse<CreateBoardResponse>(StatusCodes.OK, {boardID}));
 });
 
 export const addMember: express.Handler = catcher(async (req: express.Request, res: express.Response) => {
@@ -35,14 +37,13 @@ export const listBoard: express.Handler = catcher(async (req: express.Request, r
 
     const boards = await BoardService.listBoards(email);
 
-    const response: BoardResponse[] = boards.map(b => ({
-        name: b.name,
-        totalGroup: b.totalGroup,
-        isAssign: b.isAssign,
-        totalMember: b.members.length,
-        members: b.members.map(m => m.email),
-        owner: b.owner,
-    }));
+    json(res, newAPIResponse<BoardResponse[]>(StatusCodes.OK, boards.map(e => e.board.response(e.isAssign))));
+});
 
-    json(res, newAPIResponse<BoardResponse[]>(StatusCodes.OK, response));
+export const getBoard: express.Handler = catcher(async (req: express.Request, res: express.Response) => {
+    const {email} = verifyAuthorizationHeader(req);
+
+    const board = await BoardService.getBoard(email, req.params.boardID);
+
+    json(res, newAPIResponse<BoardResponse>(StatusCodes.OK, board.response()));
 });

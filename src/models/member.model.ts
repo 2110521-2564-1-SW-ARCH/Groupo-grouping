@@ -6,7 +6,7 @@ import {Group} from "./group.model";
 export class Member {
     @PrimaryColumn({name: "email"}) email: string;
 
-    @ManyToOne(() => Board, board => board.groups)
+    @ManyToOne(() => Board, board => board.groups, {primary: true})
     @JoinColumn({name: "board_id"})
     board: Board;
 
