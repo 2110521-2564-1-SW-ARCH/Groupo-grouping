@@ -13,7 +13,7 @@ import {initMySQLConnection} from "groupo-shared-service/datasource/mysql";
 import {logger, registerApplicationLogger, handler as grpcHandler} from "groupo-shared-service/services/logger";
 import routes from "./routers";
 import {LoggingGrpcClient} from "groupo-shared-service/grpc/client";
-
+import {httpLogger, prepareHttpLogger} from "groupo-shared-service/apiutils/middleware";
 
 initMySQLConnection(__dirname + "/models/*.ts");
 
@@ -23,8 +23,10 @@ const app = express();
 
 // request pipeline
 app.use(cors());
+app.use(prepareHttpLogger);
 app.use(express.json());
 app.use(routes);
+app.use(httpLogger);
 app.use(errorHandler);
 
 // start server

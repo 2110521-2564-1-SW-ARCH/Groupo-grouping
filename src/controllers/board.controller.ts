@@ -12,7 +12,7 @@ import {
 import {verifyAuthorizationHeader} from "groupo-shared-service/services/authentication";
 import {StatusCodes} from "http-status-codes";
 
-export const createBoard: express.Handler = catcher(async (req: express.Request, res: express.Response) => {
+export const createBoard: express.Handler = catcher(async (req: express.Request, res: express.Response, next: express.NextFunction) => {
     const {email} = verifyAuthorizationHeader(req);
 
     const {name, totalGroup, tags} = req.body as CreateBoardRequest;
@@ -20,9 +20,10 @@ export const createBoard: express.Handler = catcher(async (req: express.Request,
     const boardID = await BoardService.createBoard(email, name, totalGroup, tags);
 
     json(res, newAPIResponse<CreateBoardResponse>(StatusCodes.OK, {boardID}));
+    next();
 });
 
-export const addMember: express.Handler = catcher(async (req: express.Request, res: express.Response) => {
+export const addMember: express.Handler = catcher(async (req: express.Request, res: express.Response, next: express.NextFunction) => {
     const {email} = verifyAuthorizationHeader(req);
 
     const {members} = req.body as BoardInvitationRequest;
@@ -30,20 +31,23 @@ export const addMember: express.Handler = catcher(async (req: express.Request, r
     await BoardService.addMember(email, req.params.boardID, members);
 
     json(res, newAPIResponse<string>(StatusCodes.NO_CONTENT, ""));
+    next();
 });
 
-export const listBoard: express.Handler = catcher(async (req: express.Request, res: express.Response) => {
+export const listBoard: express.Handler = catcher(async (req: express.Request, res: express.Response, next: express.NextFunction) => {
     const {email} = verifyAuthorizationHeader(req);
 
     const boards = await BoardService.listBoards(email);
 
     json(res, newAPIResponse<BoardResponse[]>(StatusCodes.OK, boards.map(e => e.board.response(e.isAssign))));
+    next();
 });
 
-export const getBoard: express.Handler = catcher(async (req: express.Request, res: express.Response) => {
+export const getBoard: express.Handler = catcher(async (req: express.Request, res: express.Response, next: express.NextFunction) => {
     const {email} = verifyAuthorizationHeader(req);
 
     const board = await BoardService.getBoard(email, req.params.boardID);
 
     json(res, newAPIResponse<BoardResponse>(StatusCodes.OK, board.response()));
+    next();
 });
