@@ -7,6 +7,8 @@ import { v4 as uuidv4 } from "uuid";
 import { ServiceClientConstructor } from "@grpc/grpc-js/build/src/make-client";
 import IGroup from "./typings/Group";
 
+type BoardListener = (board: IBoard) => any;
+
 const PROTO_PATH = path.resolve(__dirname, "./groupo.proto");
 
 const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
@@ -25,11 +27,20 @@ const groupoProto: GroupoServiceClientConstructor = grpc.loadPackageDefinition(p
 const grpcServer = new grpc.Server();
 
 let boards: IBoard[] = [];
+let boardListeners: {[id: string]: BoardListener[]} = {};
 
 grpcServer.addService(groupoProto.GroupingGRPCService.service, {
   // getAllMenu: async (_, callback) => {
   //   callback(null, { menu });
   // },
+  listenBoard: async (call: any) => {
+    async function listener(board: IBoard) {
+      call.write(board);
+    }
+
+    if (!boardListeners[call.request.id]) boardListeners[call.request.id] = []
+    boardListeners[call.request.id].push(listener);
+  },
   getBoard: async (call: any, callback: any) => {
     let board = boards.find((n) => n.id == call.request.id);
 
@@ -91,6 +102,14 @@ grpcServer.addService(groupoProto.GroupingGRPCService.service, {
             })
           }
         }
+
+        if (boardListeners[call.request.boardId]) {
+          for (let listener of boardListeners[call.request.boardId]) {
+            listener(board);
+          }
+        }
+
+        callback(null, board);
       } else {
         callback({
           code: grpc.status.NOT_FOUND,
