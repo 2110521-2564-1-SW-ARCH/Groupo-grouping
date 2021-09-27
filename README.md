@@ -29,10 +29,13 @@ gRPC configuration
 authentication required endpoint, `Authorization` header must be provided with `Bearer` token.
 
 
-- `GET /board (EMPTY => BoardResponse[])`, list board (including own and be member)
+- `GET /board (EMPTY => BoardResponse[])`, list board (including own and be member).
 
 
-- `POST /board (CreateBoardRequest => EMPTY)`, to create new board
+- `POST /board (CreateBoardRequest => CreateBoardResponse)`, to create new board.
 
 
-- `POST /board/:boardID/invite (BoardInvitationRequest => EMPTY)`, to invite people to specific board 
+- `POST /board/:boardID (EMPTY => BoardResponse)`, to get specific board (can access only be a member or an owner).
+
+
+- `POST /board/:boardID/invite (BoardInvitationRequest => EMPTY)`, to invite people to specific board (the owner can only invite). 
