@@ -1,10 +1,10 @@
 syntax ="proto3";
 
 service GroupingGRPCService {
-    rpc GetBoards(Empty) returns (BoardList) {}
+    rpc ListenBoard (BoardId) returns (stream Board) {}
     rpc GetBoard (BoardId) returns (Board){}
-    rpc InsertBoard (Board) returns (Board) {}
-    rpc UpdateBoard (Board) returns (Board) {}
+    rpc NewBoard (BoardMetadata) returns (Board) {}
+    rpc UpdateBoard (BoardDelta) returns (Board) {}
     rpc RemoveBoard (BoardId) returns (Empty) {}
 }
 
@@ -15,20 +15,33 @@ message User {
 }
 
 message Group {
-    int32 id=1;
+    string id=1;
+    repeated User users=2;
+}
+
+message BoardDelta {
+    string boardId=1;
+    string userId=2;
+    string groupFrom=3;
+    string groupTo=4;
+}
+
+message BoardMetadata {
+    string name=2;
+    string description=3;
 }
 
 message Board {
-    string id =1;
+    string id=1;
     string name=2;
     string description=3;
-    repeated User user=4;
+    repeated Group groups=4;
 }
 
-message BoardList{
+message BoardList {
     repeated Board Board=1;
 }
 
-message BoardId{
+message BoardId {
     string id=1;
 }
