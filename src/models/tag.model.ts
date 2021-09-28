@@ -8,7 +8,7 @@ export class Tag {
     @Column({length: 255, name: "name"}) name: string;
     @Column({length: 255, name: "value"}) value: string;
 
-    @ManyToOne(() => Board, board => board.tags, {eager: true})
+    @ManyToOne(() => Board, board => board.tags)
     @JoinColumn({name: "board_id"})
     board: Board;
 
