@@ -57,10 +57,7 @@ export const listMembers = async (owner: string, boardID: string, filter: (membe
 
 export const joinBoard = async (email: string, boardID: string) => {
     const board = await getConnection().getRepository(Board).findOneOrFail({where: {boardID}});
-
-    board.members.push(new Member(email, board));
-
-    await saveBoard(board);
+    await getConnection().getRepository(Member).save(new Member(email, board));
 };
 
 export const listBoards = async (email: string): Promise<{board: Board, isAssign: boolean}[]> => {
