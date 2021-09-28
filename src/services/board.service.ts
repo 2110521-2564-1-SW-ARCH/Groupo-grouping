@@ -47,6 +47,22 @@ export const addMember = async (owner: string, boardID: string, members: string[
     await saveBoard(board);
 };
 
+export const listMembers = async (owner: string, boardID: string, filter: (member: Member) => boolean = () => true): Promise<Member[]> => {
+    const board = await getConnection().getRepository(Board).findOneOrFail({where: {owner, boardID}});
+    return board.members.filter(filter);
+};
+
+export const acceptInvitation = async (email: string, boardID: string): Promise<Member> => {
+    const board = await getConnection().getRepository(Board).findOneOrFail({where: {boardID}});
+    const member = board.members.find(c => c.email == email);
+
+    member.isJoined = true;
+
+    await saveBoard(board);
+
+    return member;
+}
+
 export const listBoards = async (email: string): Promise<{board: Board, isAssign: boolean}[]> => {
     const members = await getConnection()
         .createQueryBuilder(Member, "member")
