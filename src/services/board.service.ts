@@ -49,6 +49,9 @@ export const addMember = async (owner: string, boardID: string, members: string[
 
 export const listMembers = async (owner: string, boardID: string, filter: (member: Member) => boolean = () => true): Promise<Member[]> => {
     const board = await getConnection().getRepository(Board).findOneOrFail({where: {owner, boardID}});
+    if (!board.members.map(m => m.email).includes(owner)) {
+        throw new UnauthorizedError("user cannot access this board");
+    }
     return board.members.filter(filter);
 };
 
