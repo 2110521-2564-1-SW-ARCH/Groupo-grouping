@@ -2,10 +2,10 @@ require("dotenv").config({ path: __dirname + "/../../.env" });
 import path from "path"
 import * as grpc from '@grpc/grpc-js'
 import * as protoLoader from '@grpc/proto-loader'
-import IBoard from "./typings/Board";
+import IBoard from "../typings/Board";
 import { v4 as uuidv4 } from "uuid";
 import { ServiceClientConstructor } from "@grpc/grpc-js/build/src/make-client";
-import IGroup from "./typings/Group";
+import IGroup from "../typings/Group";
 
 type BoardListener = (board: IBoard) => any;
 
