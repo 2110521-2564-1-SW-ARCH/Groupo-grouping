@@ -1,6 +1,13 @@
-import {Entity, JoinColumn, ManyToOne, PrimaryColumn} from "typeorm";
+import {Column, Entity, JoinColumn, ManyToOne, PrimaryColumn} from "typeorm";
 import {Board} from "./board.model";
 import {Group} from "./group.model";
+
+export interface MemberResponse {
+    email: string;
+    boardID: string,
+    groupID: string;
+    isJoined: boolean;
+}
 
 @Entity("member")
 export class Member {
@@ -14,8 +21,20 @@ export class Member {
     @JoinColumn({name: "group_id"})
     group: Group;
 
+    @Column({name: "is_joined", default: false})
+    isJoined: boolean;
+
     constructor(email: string, board: Board) {
         this.email = email;
         this.board = board;
+    }
+
+    response(): MemberResponse {
+        return {
+            email: this.email,
+            boardID: this.board.boardID,
+            groupID: this.group.groupID,
+            isJoined: this.isJoined,
+        };
     }
 }

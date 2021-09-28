@@ -11,6 +11,7 @@ import {
 } from "groupo-shared-service/apiutils/messages";
 import {verifyAuthorizationHeader} from "groupo-shared-service/services/authentication";
 import {StatusCodes} from "http-status-codes";
+import { MemberResponse } from "../models/member.model";
 
 export const createBoard: express.Handler = catcher(async (req: express.Request, res: express.Response, next: express.NextFunction) => {
     const {email} = verifyAuthorizationHeader(req);
@@ -31,6 +32,42 @@ export const addMember: express.Handler = catcher(async (req: express.Request, r
     await BoardService.addMember(email, req.params.boardID, members);
 
     json(res, newAPIResponse<string>(StatusCodes.NO_CONTENT, ""));
+    next();
+});
+
+export const getBoardInvitations: express.Handler = catcher(async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    const {email} = verifyAuthorizationHeader(req);
+
+    const members = await BoardService.listMembers(email, req.params.boardID, (board) => !board.isJoined);
+
+    json(res, newAPIResponse<MemberResponse[]>(StatusCodes.OK, members.map(e => e.response())));
+    next();
+});
+
+export const getBoardMembers: express.Handler = catcher(async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    const {email} = verifyAuthorizationHeader(req);
+
+    const members = await BoardService.listMembers(email, req.params.boardID);
+
+    json(res, newAPIResponse<MemberResponse[]>(StatusCodes.OK, members.map(e => e.response())));
+    next();
+});
+
+export const getBoardMembersJoined: express.Handler = catcher(async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    const {email} = verifyAuthorizationHeader(req);
+
+    const members = await BoardService.listMembers(email, req.params.boardID, (board) => board.isJoined);
+
+    json(res, newAPIResponse<MemberResponse[]>(StatusCodes.OK, members.map(e => e.response())));
+    next();
+});
+
+export const acceptInvitation: express.Handler = catcher(async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    const {email} = verifyAuthorizationHeader(req);
+
+    const member = await BoardService.acceptInvitation(req.params.boardID, email);
+
+    json(res, newAPIResponse<MemberResponse>(StatusCodes.OK, member.response()));
     next();
 });
 
