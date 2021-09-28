@@ -65,7 +65,7 @@ export const getBoardMembersJoined: express.Handler = catcher(async (req: expres
 export const acceptInvitation: express.Handler = catcher(async (req: express.Request, res: express.Response, next: express.NextFunction) => {
     const {email} = verifyAuthorizationHeader(req);
 
-    const member = await BoardService.acceptInvitation(req.params.boardID, email);
+    const member = await BoardService.acceptInvitation(email, req.params.boardID);
 
     json(res, newAPIResponse<MemberResponse>(StatusCodes.OK, member.response()));
     next();
