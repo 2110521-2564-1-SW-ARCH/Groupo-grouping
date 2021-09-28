@@ -79,8 +79,9 @@ export const listBoards = async (email: string): Promise<{board: Board, isAssign
 
 export const getBoard = async (email: string, boardID: string): Promise<Board> => {
     const board = await getConnection().getRepository(Board).findOneOrFail({where: {boardID}});
-    if (!board.members.map(m => m.email).includes(email)) {
-        throw new UnauthorizedError("user cannot access this board");
-    }
+    // TODO : implement get info when join
+    // if (!board.members.map(m => m.email).includes(email)) {
+    //     throw new UnauthorizedError("user cannot access this board");
+    // }
     return board;
 };
