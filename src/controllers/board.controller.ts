@@ -12,6 +12,7 @@ import {
 import {verifyAuthorizationHeader} from "groupo-shared-service/services/authentication";
 import {StatusCodes} from "http-status-codes";
 import { MemberResponse } from "../models/member.model";
+import {joinBoard} from "../services/board.service";
 
 export const createBoard: express.Handler = catcher(async (req: express.Request, res: express.Response, next: express.NextFunction) => {
     const {email} = verifyAuthorizationHeader(req);
@@ -65,9 +66,9 @@ export const getBoardMembersJoined: express.Handler = catcher(async (req: expres
 export const acceptInvitation: express.Handler = catcher(async (req: express.Request, res: express.Response, next: express.NextFunction) => {
     const {email} = verifyAuthorizationHeader(req);
 
-    const member = await BoardService.acceptInvitation(email, req.params.boardID);
+    await BoardService.joinBoard(email, req.params.boardID);
 
-    json(res, newAPIResponse<MemberResponse>(StatusCodes.OK, member.response()));
+    json(res, newAPIResponse<string>(StatusCodes.NO_CONTENT, ""));
     next();
 });
 

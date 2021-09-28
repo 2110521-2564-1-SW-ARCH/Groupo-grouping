@@ -55,16 +55,13 @@ export const listMembers = async (owner: string, boardID: string, filter: (membe
     return board.members.filter(filter);
 };
 
-export const acceptInvitation = async (email: string, boardID: string): Promise<Member> => {
+export const joinBoard = async (email: string, boardID: string) => {
     const board = await getConnection().getRepository(Board).findOneOrFail({where: {boardID}});
-    const member = board.members.find(c => c.email == email);
 
-    member.isJoined = true;
+    board.members.push(new Member(email, board));
 
     await saveBoard(board);
-
-    return member;
-}
+};
 
 export const listBoards = async (email: string): Promise<{board: Board, isAssign: boolean}[]> => {
     const members = await getConnection()
