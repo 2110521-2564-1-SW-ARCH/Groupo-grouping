@@ -13,11 +13,11 @@ export interface MemberResponse {
 export class Member {
     @PrimaryColumn({name: "email"}) email: string;
 
-    @ManyToOne(() => Board, board => board.groups, {primary: true})
+    @ManyToOne(() => Board, board => board.groups, {primary: true, eager: true})
     @JoinColumn({name: "board_id"})
     board: Board;
 
-    @ManyToOne(() => Group, group => group.members)
+    @ManyToOne(() => Group, group => group.members, {eager: true})
     @JoinColumn({name: "group_id"})
     group: Group;
 

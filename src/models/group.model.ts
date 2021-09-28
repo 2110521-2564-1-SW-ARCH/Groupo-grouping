@@ -6,11 +6,11 @@ import {Member} from "./member.model";
 export class Group {
     @PrimaryGeneratedColumn("uuid", {name: "group_id"}) groupID: string;
 
-    @ManyToOne(() => Board, board => board.groups)
+    @ManyToOne(() => Board, board => board.groups, {eager: true})
     @JoinColumn({name: "board_id"})
     board: Board;
 
-    @OneToMany(() => Member, member => member.group)
+    @OneToMany(() => Member, member => member.group, {eager: true})
     members: Member[];
 
     constructor(board: Board) {
