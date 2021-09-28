@@ -21,7 +21,7 @@ export class Member {
     @JoinColumn({name: "group_id"})
     group: Group;
 
-    @Column({name: "is_joined"})
+    @Column({name: "is_joined", default: false})
     isJoined: boolean;
 
     constructor(email: string, board: Board) {
