@@ -13,8 +13,8 @@ export class Group {
     @OneToMany(() => Member, member => member.group)
     members: Member[];
 
-    name: string;
-    description: string;
+    @Column({length: 255, name: "name", default: "New Group"}) name: string;
+    @Column("text", {nullable: true}) description: string;
 
     constructor(board: Board) {
         this.board = board;
