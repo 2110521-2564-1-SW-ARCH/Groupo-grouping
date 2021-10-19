@@ -15,7 +15,7 @@ export const createBoard = async (owner: string, name: string, totalGroup: numbe
 
     const groups: Group[] = [];
     for (let i = 0; i < totalGroup; i++) {
-        groups.push(new Group(board));
+        groups.push(new Group(board, "Untitled - " + (i+1)));
     }
     board.groups = groups;
 
@@ -33,6 +33,12 @@ export const createBoard = async (owner: string, name: string, totalGroup: numbe
 
     return board.boardID;
 };
+
+export const createGroup = async (owner: string, boardID: string, name = "Untitled", description: string | null = null): Promise<string> => {
+    const board = await getConnection().getRepository(Board).findOneOrFail({where: {owner, boardID}});
+    const group = new Group(board, name, description);
+    return group.groupID;
+}
 
 export const addMember = async (owner: string, boardID: string, members: string[]) => {
     const board = await getConnection().getRepository(Board).findOneOrFail({where: {owner, boardID}});

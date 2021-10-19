@@ -16,7 +16,9 @@ export class Group {
     @Column({length: 255, name: "name", default: "New Group"}) name: string;
     @Column("text", {nullable: true}) description: string;
 
-    constructor(board: Board) {
+    constructor(board: Board, name: string, description: string | null = null) {
         this.board = board;
+        this.name = name;
+        this.description = description;
     }
 }

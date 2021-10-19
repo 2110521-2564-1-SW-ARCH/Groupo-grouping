@@ -6,6 +6,8 @@ import {
     BoardResponse,
     CreateBoardRequest,
     CreateBoardResponse,
+    CreateGroupRequest,
+    CreateGroupResponse,
     json,
     newAPIResponse
 } from "groupo-shared-service/apiutils/messages";
@@ -21,6 +23,17 @@ export const createBoard: express.Handler = catcher(async (req: express.Request,
     const boardID = await BoardService.createBoard(email, name, totalGroup, tags);
 
     json(res, newAPIResponse<CreateBoardResponse>(StatusCodes.OK, {boardID}));
+    next();
+});
+
+export const createGroup: express.Handler = catcher(async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    const {email} = verifyAuthorizationHeader(req);
+
+    const {boardID, name, description} = req.body as CreateGroupRequest;
+
+    const groupID = await BoardService.createGroup(email, boardID, name, description);
+
+    json(res, newAPIResponse<CreateGroupResponse>(StatusCodes.OK, {boardID, groupID}));
     next();
 });
 
