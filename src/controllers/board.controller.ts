@@ -35,49 +35,44 @@ export const addMember: express.Handler = catcher(async (req: express.Request, r
     next();
 });
 
-export const getBoardInvitations: express.Handler = catcher(async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+export const getBoardInvitations: express.Handler = catcher(async (req: express.Request, res: express.Response) => {
     const {email} = verifyAuthorizationHeader(req);
 
     const members = await BoardService.listMembers(email, req.params.boardID, (board) => !board.isJoined);
 
     json(res, newAPIResponse<MemberResponse[]>(StatusCodes.OK, members.map(e => e.response())));
-    next();
 });
 
-export const getBoardMembers: express.Handler = catcher(async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+export const getBoardMembers: express.Handler = catcher(async (req: express.Request, res: express.Response) => {
     const {email} = verifyAuthorizationHeader(req);
 
     const members = await BoardService.listMembers(email, req.params.boardID);
 
     json(res, newAPIResponse<MemberResponse[]>(StatusCodes.OK, members.map(e => e.response())));
-    next();
 });
 
-export const getBoardMembersJoined: express.Handler = catcher(async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+export const getBoardMembersJoined: express.Handler = catcher(async (req: express.Request, res: express.Response) => {
     const {email} = verifyAuthorizationHeader(req);
 
     const members = await BoardService.listMembers(email, req.params.boardID, (board) => board.isJoined);
 
     json(res, newAPIResponse<MemberResponse[]>(StatusCodes.OK, members.map(e => e.response())));
-    next();
 });
 
-export const acceptInvitation: express.Handler = catcher(async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+export const acceptInvitation: express.Handler = catcher(async (req: express.Request, res: express.Response) => {
     const {email} = verifyAuthorizationHeader(req);
 
     const member = await BoardService.acceptInvitation(req.params.boardID, email);
 
     json(res, newAPIResponse<MemberResponse>(StatusCodes.OK, member.response()));
-    next();
 });
 
-export const listBoard: express.Handler = catcher(async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+export const listBoard: express.Handler = catcher(async (req: express.Request, res: express.Response) => {
     const {email} = verifyAuthorizationHeader(req);
 
     const boards = await BoardService.listBoards(email);
 
     json(res, newAPIResponse<BoardResponse[]>(StatusCodes.OK, boards.map(e => e.board.response(e.isAssign))));
-    next();
 });
 
 export const getBoard: express.Handler = catcher(async (req: express.Request, res: express.Response, next: express.NextFunction) => {

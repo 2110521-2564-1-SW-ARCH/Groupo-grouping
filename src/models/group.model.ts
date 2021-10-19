@@ -13,6 +13,9 @@ export class Group {
     @OneToMany(() => Member, member => member.group)
     members: Member[];
 
+    name: string;
+    description: string;
+
     constructor(board: Board) {
         this.board = board;
     }
