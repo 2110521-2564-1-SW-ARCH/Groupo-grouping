@@ -89,5 +89,8 @@ export const getBoard = async (email: string, boardID: string): Promise<Board> =
     // if (!board.members.map(m => m.email).includes(email)) {
     //     throw new UnauthorizedError("user cannot access this board");
     // }
+
+
+    
     return board;
 };
