@@ -3,7 +3,7 @@ import {Board} from "../models/board.model";
 import {Tag} from "../models/tag.model";
 import {Group} from "../models/group.model";
 import {Member} from "../models/member.model";
-import {UnauthorizedError} from "groupo-shared-service/apiutils/errors";
+import {NotFoundError, UnauthorizedError} from "groupo-shared-service/apiutils/errors";
 
 const saveBoard = async (board: Board) => {
     await getConnection().getRepository(Board).save(board);
@@ -38,6 +38,26 @@ export const createGroup = async (owner: string, boardID: string, name = "Untitl
     const board = await getConnection().getRepository(Board).findOneOrFail({where: {owner, boardID}});
     const group = new Group(board, name, description);
     return group.groupID;
+}
+
+export const deleteGroup = async (owner: string, groupID: string) => {
+    const group = await getConnection().getRepository(Group).findOneOrFail({where: {groupID}});
+    await getConnection().getRepository(Board).findOneOrFail({where: {owner, boardID: group.board.boardID}});
+    await getConnection().getRepository(Group).delete(group);
+}
+
+export const assignToGroup = async (email: string, boardID: string, groupID: string | null) => {
+    const group = await getConnection().getRepository(Group).findOneOrFail({where: {groupID}});
+
+    if (group.board.boardID != boardID) {
+        throw new NotFoundError("Group not found");
+    }
+
+    const board = await getConnection().getRepository(Board).findOneOrFail({where: {boardID}});
+    const member = board.members.find(member => member.email == email);
+    member.group = group;
+
+    await getConnection().getRepository(Member).save(member);
 }
 
 export const addMember = async (owner: string, boardID: string, members: string[]) => {
@@ -91,6 +111,6 @@ export const getBoard = async (email: string, boardID: string): Promise<Board> =
     // }
 
 
-    
+
     return board;
 };

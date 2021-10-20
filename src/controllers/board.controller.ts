@@ -37,6 +37,32 @@ export const createGroup: express.Handler = catcher(async (req: express.Request,
     next();
 });
 
+export const deleteGroup: express.Handler = catcher(async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    const {email} = verifyAuthorizationHeader(req);
+
+    const {groupID} = req.params;
+
+    await BoardService.deleteGroup(email, groupID);
+
+    json(res, newAPIResponse<string>(StatusCodes.NO_CONTENT, ""));
+    next();
+});
+
+export const assignToGroup: express.Handler = catcher(async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    let {groupID, email} = req.body;
+
+    if (!email) {
+        email = verifyAuthorizationHeader(req);
+    }
+
+    const {boardID} = req.params;
+
+    await BoardService.assignToGroup(email, groupID);
+
+    json(res, newAPIResponse<string>(StatusCodes.NO_CONTENT, ""));
+    next();
+});
+
 export const addMember: express.Handler = catcher(async (req: express.Request, res: express.Response, next: express.NextFunction) => {
     const {email} = verifyAuthorizationHeader(req);
 
