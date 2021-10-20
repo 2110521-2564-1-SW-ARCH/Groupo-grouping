@@ -50,14 +50,16 @@ export const deleteGroup: express.Handler = catcher(async (req: express.Request,
 
 export const assignToGroup: express.Handler = catcher(async (req: express.Request, res: express.Response, next: express.NextFunction) => {
     let {groupID, email} = req.body;
+    const {boardID} = req.params;
 
     if (!email) {
         email = verifyAuthorizationHeader(req);
+    } else {
+        const owner = verifyAuthorizationHeader(req).email;
+        await BoardService.checkOwnership(owner, boardID);
     }
 
-    const {boardID} = req.params;
-
-    await BoardService.assignToGroup(email, groupID);
+    await BoardService.assignToGroup(email, boardID, groupID);
 
     json(res, newAPIResponse<string>(StatusCodes.NO_CONTENT, ""));
     next();

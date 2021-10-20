@@ -12,4 +12,8 @@ boardRouter.get("/:boardID/members_joined", BoardController.getBoardMembersJoine
 boardRouter.post("/:boardID/invite", BoardController.addMember);
 boardRouter.post("/:boardID/join", BoardController.acceptInvitation);
 
+boardRouter.post("/:boardID/groups", BoardController.createGroup);
+boardRouter.delete("/:boardID/groups/:groupID", BoardController.deleteGroup);
+boardRouter.post("/:boardID/groups/assign", BoardController.assignToGroup);
+
 export default boardRouter;

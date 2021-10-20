@@ -40,6 +40,15 @@ export const createGroup = async (owner: string, boardID: string, name = "Untitl
     return group.groupID;
 }
 
+export const updateGroup = async (owner: string, groupID: string, name = "Untitled", description: string | null = null) => {
+    const group = await getConnection().getRepository(Group).findOneOrFail({where: {groupID}});
+    await getConnection().getRepository(Board).findOneOrFail({where: {owner, boardID: group.board.boardID}});
+    group.name = name;
+    group.description = description;
+    await getConnection().getRepository(Group).save(group);
+}
+
+
 export const deleteGroup = async (owner: string, groupID: string) => {
     const group = await getConnection().getRepository(Group).findOneOrFail({where: {groupID}});
     await getConnection().getRepository(Board).findOneOrFail({where: {owner, boardID: group.board.boardID}});
@@ -112,5 +121,10 @@ export const getBoard = async (email: string, boardID: string): Promise<Board> =
 
 
 
+    return board;
+};
+
+export const checkOwnership = async (owner: string, boardID: string): Promise<Board> => {
+    const board = await getConnection().getRepository(Board).findOneOrFail({where: {owner, boardID}});
     return board;
 };
