@@ -37,6 +37,18 @@ export const createGroup: express.Handler = catcher(async (req: express.Request,
     next();
 });
 
+export const updateGroup: express.Handler = catcher(async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    const {email} = verifyAuthorizationHeader(req);
+
+    const {groupID} = req.params;
+    const {name, description} = req.body;
+
+    await BoardService.updateGroup(email, groupID, name, description);
+
+    json(res, newAPIResponse<string>(StatusCodes.NO_CONTENT, ""));
+    next();
+});
+
 export const deleteGroup: express.Handler = catcher(async (req: express.Request, res: express.Response, next: express.NextFunction) => {
     const {email} = verifyAuthorizationHeader(req);
 

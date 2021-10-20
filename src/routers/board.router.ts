@@ -13,6 +13,7 @@ boardRouter.post("/:boardID/invite", BoardController.addMember);
 boardRouter.post("/:boardID/join", BoardController.acceptInvitation);
 
 boardRouter.post("/:boardID/groups", BoardController.createGroup);
+boardRouter.put("/:boardID/groups/:groupID", BoardController.updateGroup);
 boardRouter.delete("/:boardID/groups/:groupID", BoardController.deleteGroup);
 boardRouter.post("/:boardID/groups/assign", BoardController.assignToGroup);
 
