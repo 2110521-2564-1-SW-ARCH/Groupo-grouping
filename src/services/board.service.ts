@@ -17,7 +17,7 @@ export const createBoard = async (owner: string, name: string, totalGroup: numbe
     for (let i = 0; i < totalGroup; i++) {
         groups.push(new Group(board, "Untitled - " + (i+1)));
     }
-    board.groups = groups;
+    board.groups = Promise.resolve(groups);
 
     const tagList: Tag[] = [];
     for (const tag of Object.keys(tags)) {

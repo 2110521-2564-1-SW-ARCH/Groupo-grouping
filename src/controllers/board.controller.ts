@@ -125,7 +125,13 @@ export const listBoard: express.Handler = catcher(async (req: express.Request, r
 
     const boards = await BoardService.listBoards(email);
 
-    json(res, newAPIResponse<BoardResponse[]>(StatusCodes.OK, boards.map(e => e.board.response(e.isAssign))));
+    let boardsResponse = [];
+
+    for (let board of boards) {
+        boardsResponse.push(await board.board.response(board.isAssign));
+    }
+
+    json(res, newAPIResponse<BoardResponse[]>(StatusCodes.OK, boardsResponse));
 });
 
 export const getBoard: express.Handler = catcher(async (req: express.Request, res: express.Response, next: express.NextFunction) => {
@@ -133,6 +139,6 @@ export const getBoard: express.Handler = catcher(async (req: express.Request, re
 
     const board = await BoardService.getBoard(email, req.params.boardID);
 
-    json(res, newAPIResponse<BoardResponse>(StatusCodes.OK, board.response()));
+    json(res, newAPIResponse<BoardResponse>(StatusCodes.OK, await board.response()));
     next();
 });

@@ -1,4 +1,4 @@
-import {Column, Entity, OneToMany, PrimaryGeneratedColumn} from "typeorm";
+import {Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn} from "typeorm";
 import {Group} from "./group.model";
 import {Tag} from "./tag.model";
 import {Member} from "./member.model";
@@ -12,8 +12,8 @@ export class Board {
     @Column({length: 255, name: "name"}) name: string;
     @Column("int", {name: "total_group"}) totalGroup: number;
 
-    @OneToMany(() => Group, group => group.board, {cascade: true, eager: true})
-    groups: Group[];
+    @OneToMany(() => Group, group => group.board, {cascade: true})
+    groups: Promise<Group[]>;
 
     @OneToMany(() => Tag, tag => tag.board, {cascade: true, eager: true})
     tags: Tag[];
@@ -21,21 +21,32 @@ export class Board {
     @OneToMany(() => Member, member => member.board, {cascade: true, eager: true})
     members: Member[];
 
+    @CreateDateColumn({ type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)" })
+    public created_at: Date;
+
+    @UpdateDateColumn({ type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)", onUpdate: "CURRENT_TIMESTAMP(6)" })
+    public updated_at: Date;
+
     constructor(owner: string, name: string, totalGroup: number) {
         this.owner = owner;
         this.name = name;
         this.totalGroup = totalGroup;
     }
 
-    response(isAssign: boolean = false): BoardResponse {
+    async response(isAssign: boolean = false): Promise<BoardResponse> {
         let membersNoGroup: string[] = [];
 
-        let groups: GroupResponse[] = this.groups.map(group => ({
+        let groupsModel = await this.groups;
+
+        let groups: GroupResponse[] = groupsModel.map(group => ({
             groupID: group.groupID,
             name: group.name,
             description: group.description,
             members: [],
+            created_at: group.created_at,
         }));
+
+        groups.sort((a, b) => a.created_at.getTime() - b.created_at.getTime());
 
         for (let member of this.members) {
             if (member.group) {
