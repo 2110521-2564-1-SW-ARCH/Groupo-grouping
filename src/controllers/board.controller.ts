@@ -65,7 +65,7 @@ export const assignToGroup: express.Handler = catcher(async (req: express.Reques
     const {boardID} = req.params;
 
     if (!email) {
-        email = verifyAuthorizationHeader(req);
+        email = verifyAuthorizationHeader(req).email;
     } else {
         const owner = verifyAuthorizationHeader(req).email;
         await BoardService.checkOwnership(owner, boardID);

@@ -64,6 +64,7 @@ export const assignToGroup = async (email: string, boardID: string, groupID: str
 
     const board = await getConnection().getRepository(Board).findOneOrFail({where: {boardID}});
     const member = board.members.find(member => member.email == email);
+    member.board = board;
     member.group = group;
 
     await getConnection().getRepository(Member).save(member);
