@@ -6,6 +6,9 @@ import {Member} from "../models/member.model";
 import {NotFoundError, UnauthorizedError} from "groupo-shared-service/apiutils/errors";
 
 const saveBoard = async (board: Board) => {
+    for (const member of board.members) {
+        member.board = board;
+    }
     await getConnection().getRepository(Board).save(board);
 };
 
