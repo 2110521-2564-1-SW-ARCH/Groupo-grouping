@@ -86,6 +86,7 @@ export const listBoard: express.Handler = catcher(async (req: express.Request, r
  * get board information
  */
 export const findBoard: express.Handler = catcher(async (req: express.Request, res: express.Response, next: express.NextFunction) => {
-    json(res, newAPIResponse<BoardResponse>(StatusCodes.OK, await BoardService.findByID(getBoardID(req))));
+    const {email} = verifyAuthorizationHeader(req);
+    json(res, newAPIResponse<BoardResponse>(StatusCodes.OK, await BoardService.findByID(email, getBoardID(req))));
     next();
 });

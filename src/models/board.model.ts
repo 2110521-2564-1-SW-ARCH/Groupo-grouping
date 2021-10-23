@@ -7,7 +7,6 @@ export interface BoardQueryResult {
     board_id: string;
     owner: string;
     name: string;
-    is_assign: "0" | "1";
     group_id: string;
     group_name: string;
     group_description: string | null;

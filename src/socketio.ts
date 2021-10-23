@@ -11,8 +11,16 @@ export const io = new Server(server, {cors: {origin: "*"}});
 
 io.on("connection", (socket) => {
     const {boardID, token} = socket.handshake.query as {boardID: string, token: string};
-    const {email} = verifyAuthorization(token);
     const connectionLogger = logger.set("boardID", boardID);
+
+    let email: string;
+    try {
+        email = verifyAuthorization(token).email;
+    } catch (err) {
+        LoggingGrpcClient.error(connectionLogger.message("socket.io unauthorized error").proto(), grpcHandler);
+        socket.disconnect();
+        return;
+    }
     LoggingGrpcClient.info(connectionLogger.message("socket.io connected").proto(), grpcHandler);
 
     socket.join(boardID);

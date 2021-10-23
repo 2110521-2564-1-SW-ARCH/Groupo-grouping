@@ -69,13 +69,13 @@ export const create = async (owner: string, name: string, totalGroup: number, ta
 /**
  * get board by ID
  */
-export const findByID = async (boardID: string): Promise<BoardResponse> => {
+export const findByID = async (email: string, boardID: string): Promise<BoardResponse> => {
     const boardSubQuery = `SELECT board_id, owner, name, updated_at FROM board WHERE board.board_id = '${boardID}'`;
     const query = `SELECT b.board_id, b.owner, b.name, b.updated_at, g.group_id, g.name as group_name, g.description as group_description FROM (${boardSubQuery}) as b INNER JOIN \`group\` as g ON g.board_id = b.board_id`;
 
     const boardQueryResults: BoardQueryResult[] = await getManager().query(query);
 
-    const response = await queryResultMapping(boardQueryResults);
+    const response = await queryResultMapping(email, boardQueryResults);
     return response[0];
 };
 
@@ -133,22 +133,22 @@ export const listMembers = async (email: string, boardID: string): Promise<Membe
  */
 export const listBoards = async (email: string): Promise<BoardResponse[]> => {
     const memberSubQuery = `SELECT * FROM member WHERE member.email = '${email}'`;
-    const boardSubQuery = `SELECT board_id, owner, name, updated_at, (m.group_id IS NOT NULL) as is_assign FROM board NATURAL JOIN (${memberSubQuery}) as m`;
-    const query = `SELECT b.board_id, b.owner, b.name, b.updated_at, b.is_assign, g.group_id, g.name as group_name, g.description as group_description FROM (${boardSubQuery}) as b INNER JOIN \`group\` as g ON g.board_id = b.board_id`;
+    const boardSubQuery = `SELECT board_id, owner, name, updated_at FROM board NATURAL JOIN (${memberSubQuery}) as m`;
+    const query = `SELECT b.board_id, b.owner, b.name, b.updated_at, g.group_id, g.name as group_name, g.description as group_description FROM (${boardSubQuery}) as b INNER JOIN \`group\` as g ON g.board_id = b.board_id`;
 
     const boardQueryResults: BoardQueryResult[] = await getManager().query(query);
 
-    return queryResultMapping(boardQueryResults);
+    return queryResultMapping(email, boardQueryResults);
 };
 
-const queryResultMapping = async (boardQueryResults: BoardQueryResult[]): Promise<BoardResponse[]> => {
+const queryResultMapping = async (email: string, boardQueryResults: BoardQueryResult[]): Promise<BoardResponse[]> => {
     const boards: Record<string, BoardResponse> = {};
 
     await Promise.all(boardQueryResults.map(async (result) => {
         if (!boards[result.board_id]) {
             boards[result.board_id] = {
                 boardID: result.board_id,
-                isAssign: result.is_assign !== "0",
+                isAssign: false,
                 owner: result.owner,
                 name: result.name,
                 groups: [],
@@ -169,7 +169,10 @@ const queryResultMapping = async (boardQueryResults: BoardQueryResult[]): Promis
             board.groups.find(g => g.groupID === m.group_id).members.push(m.email);
         }
         board.unAssignedMember = members.filter(e => e.group_id === null).map(e => e.email);
+        if (!!members.find(m => m.email === email) && !board.unAssignedMember.includes(email)) {
+            board.isAssign = true;
+        }
     }));
 
     return Object.values(boards);
-}
+};
