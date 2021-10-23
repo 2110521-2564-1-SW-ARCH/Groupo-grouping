@@ -58,13 +58,10 @@ export class Group {
     }
 
     async response(): Promise<GroupResponse> {
-        const members = Promise.all((await this.getMembers()).map(async member => await member.response()));
-
         return {
             groupID: this.groupID,
-            createdAt: this.createdAt,
             description: this.description,
-            members: await members,
+            members: [],
             name: this.name,
         };
     }

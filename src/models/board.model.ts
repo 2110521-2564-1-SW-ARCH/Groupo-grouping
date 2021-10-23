@@ -4,6 +4,17 @@ import {Tag} from "./tag.model";
 import {Member} from "./member.model";
 import {BoardResponse} from "groupo-shared-service/apiutils/messages";
 
+export interface BoardQueryResult {
+    board_id: string;
+    owner: string;
+    name: string;
+    is_assign: "0" | "1";
+    group_id: string;
+    group_name: string;
+    group_description: string | null;
+    updated_at: Date;
+}
+
 @Entity("board")
 export class Board {
     @PrimaryGeneratedColumn("uuid", {name: "board_id"}) boardID: string;
@@ -56,12 +67,11 @@ export class Board {
 
     async response(isAssign: boolean = false): Promise<BoardResponse> {
         const groups = Promise.all((await this.getGroups()).map(async group => await group.response()));
-        const members = Promise.all((await this.getMembers()).map(async member => await member.response()));
 
         return {
             boardID: this.boardID,
             isAssign,
-            members: await members,
+            unAssignedMember: [],
             name: this.name,
             owner: this.owner,
             groups: await groups,

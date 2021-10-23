@@ -3,6 +3,20 @@ import {Board} from "./board.model";
 import {Group} from "./group.model";
 import {MemberResponse} from "groupo-shared-service/apiutils/messages";
 
+export interface MemberQueryResult {
+    email: string;
+    board_id: string;
+    group_id: string | null;
+}
+
+export const mapMemberResponse = (result: MemberQueryResult): MemberResponse => {
+    return {
+        email: result.email,
+        boardID: result.board_id,
+        groupID: result.group_id,
+    };
+};
+
 @Entity("member")
 export class Member {
     @PrimaryColumn({name: "email"}) email: string;
