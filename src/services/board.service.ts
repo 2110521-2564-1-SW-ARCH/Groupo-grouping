@@ -23,7 +23,7 @@ export const create = async (owner: string, name: string, totalGroup: number, ta
     // pre create group
     const groups: Group[] = [];
     for (let i = 0; i < totalGroup; i++) {
-        groups.push(new Group(board, `Group ${i+1}`));
+        groups.push(new Group(board, `Group ${i + 1}`));
     }
     board.groups = Promise.resolve(groups);
 
@@ -34,10 +34,10 @@ export const create = async (owner: string, name: string, totalGroup: number, ta
             tagList.push(new Tag(tag, value, board));
         }
     }
-    board.tags = tagList;
+    board.tags = Promise.resolve(tagList);
 
     // automatically set owner to be a member of the board
-    board.members = [new Member(owner, board)];
+    board.members = Promise.resolve([new Member(owner, board)]);
 
     await save(board);
 
@@ -65,18 +65,23 @@ export const findByOwnerAndID = async (owner: string, boardID: string): Promise<
  * add new members to specific `boardID`
  * @param owner
  * @param boardID
- * @param members
+ * @param newMembers
  */
-export const addMember = async (owner: string, boardID: string, members: string[]) => {
+export const addMember = async (owner: string, boardID: string, newMembers: string[]) => {
     const board = await findByOwnerAndID(owner, boardID);
 
-    const memberSet: Set<string> = new Set(board.members.map(e => e.email));
-    for (const member of members) {
+    const members = await board.getMembers();
+
+    const memberSet: Set<string> = new Set(members.map(e => e.email));
+    for (const member of newMembers) {
         if (memberSet.has(member)) {
             continue;
         }
-        board.members.push(new Member(member, board));
+        members.push(new Member(member, board));
     }
+
+    board.members = Promise.resolve(members);
+
     await save(board);
 };
 
@@ -87,7 +92,12 @@ export const addMember = async (owner: string, boardID: string, members: string[
  */
 export const join = async (email: string, boardID: string) => {
     const board = await findByID(boardID);
-    board.members.push(new Member(email, board));
+
+    const members = await board.getMembers();
+
+    members.push(new Member(email, board));
+
+    board.members = Promise.resolve(members);
     await save(board);
 };
 
@@ -95,27 +105,24 @@ export const join = async (email: string, boardID: string) => {
  * list all member for specific `boardID`
  * @param owner
  * @param boardID
- * @param filter
  */
-export const listMember = async (owner: string, boardID: string, filter: (member: Member) => boolean = () => true): Promise<Member[]> => {
+export const listMember = async (owner: string, boardID: string): Promise<Member[]> => {
     const board = await findByID(boardID);
-    if (!board.members.map(m => m.email).includes(owner)) {
+    const members = await board.getMembers();
+    if (!members.map(m => m.email).includes(owner)) {
         throw new UnauthorizedError("user cannot access this board");
     }
-    return board.members.filter(filter);
+    return members;
 };
 
 /**
  * list all boards that this `email` is a member
  * @param email
  */
-export const findAll = async (email: string): Promise<{board: Board, isAssign: boolean}[]> => {
-    const members = await getConnection()
-        .createQueryBuilder(Member, "member")
-        .where("member.email = :email", {email})
-        .leftJoinAndSelect("member.board", "board")
-        .leftJoinAndSelect("board.members", "m")
-        .getMany();
+export const findAll = async (email: string): Promise<{ board: Board, isAssign: boolean }[]> => {
+    const members = await getConnection().getRepository(Member).find({where: {email}});
 
-    return members.map(member => ({board: member.board, isAssign: !!member.group}));
+    return members.map(member => {
+        return {board: member.board, isAssign: !!(member.group)};
+    });
 };

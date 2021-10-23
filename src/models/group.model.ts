@@ -22,7 +22,7 @@ export class Group {
     board: Board;
 
     @OneToMany(() => Member, member => member.group, {cascade: true})
-    members: Member[];
+    members: Promise<Member[]>;
 
     @Column({length: 255, name: "name"}) name: string;
     @Column("text", {nullable: true}) description: string;
@@ -48,12 +48,22 @@ export class Group {
         this.description = description;
     }
 
-    response(): GroupResponse {
+    // since typeorm does not work on cyclic, we have to assign cyclic field by ourself
+    async getMembers(): Promise<Member[]> {
+        return (await this.members).map(member => {
+            member.group = this;
+            return member;
+        });
+    }
+
+    async response(): Promise<GroupResponse> {
+        const members = Promise.all((await this.getMembers()).map(async member => await member.response()));
+
         return {
             groupID: this.groupID,
             createdAt: this.createdAt,
             description: this.description,
-            members: this.members.map(member => member.response()),
+            members: await members,
             name: this.name,
         };
     }

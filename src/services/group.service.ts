@@ -40,7 +40,8 @@ export const findByID = async (groupID: string): Promise<Group> => {
  */
 export const findByOwnerAndID = async (owner: string, groupID: string): Promise<Group> => {
     const group = await findByID(groupID);
-    if (group.board.owner !== owner) {
+    const board = await group.board;
+    if (board.owner !== owner) {
         throw new NotFoundError();
     }
     return group;
@@ -79,8 +80,9 @@ export const remove = async (owner: string, groupID: string) => {
  */
 export const assignMember = async (email: string, groupID: string | null) => {
     const group = await findByID(groupID);
+    const members = await (await group.board).members;
 
-    const member = group.board.members.find(m => m.email === email);
+    const member = members.find(m => m.email === email);
     member.group = group;
 
     await getConnection().getRepository(Member).save(member);

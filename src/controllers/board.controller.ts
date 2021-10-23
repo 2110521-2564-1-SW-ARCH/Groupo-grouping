@@ -14,7 +14,7 @@ import {StatusCodes} from "http-status-codes";
 
 const getBoardID = (req: express.Request): string => {
     return req.params.boardID;
-}
+};
 
 /**
  * create a new board with specific groups and tags
@@ -51,9 +51,9 @@ export const addMember: express.Handler = catcher(async (req: express.Request, r
 export const join: express.Handler = catcher(async (req: express.Request, res: express.Response, next: express.NextFunction) => {
     const {email} = verifyAuthorizationHeader(req);
 
-    const members = await BoardService.listMember(email, getBoardID(req));
+    await BoardService.join(email, getBoardID(req));
 
-    json(res, newAPIResponse<MemberResponse[]>(StatusCodes.OK, members.map(e => e.response())));
+    json(res, newAPIResponse<string>(StatusCodes.NO_CONTENT, ""));
     next();
 });
 
@@ -65,7 +65,9 @@ export const listMember: express.Handler = catcher(async (req: express.Request, 
 
     const members = await BoardService.listMember(email, getBoardID(req));
 
-    json(res, newAPIResponse<MemberResponse[]>(StatusCodes.OK, members.map(e => e.response())));
+    const response = Promise.all(members.map(async m => await m.response()));
+
+    json(res, newAPIResponse<MemberResponse[]>(StatusCodes.OK, await response));
     next();
 });
 
@@ -78,7 +80,6 @@ export const listBoard: express.Handler = catcher(async (req: express.Request, r
     const boards = await BoardService.findAll(email);
 
     const response = await Promise.all(boards.map(async board => await board.board.response(board.isAssign)));
-
     json(res, newAPIResponse<BoardResponse[]>(StatusCodes.OK, response));
     next();
 });

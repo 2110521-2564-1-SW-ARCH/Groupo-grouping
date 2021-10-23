@@ -15,10 +15,10 @@ export class Board {
     groups: Promise<Group[]>;
 
     @OneToMany(() => Tag, tag => tag.board, {cascade: true, eager: true})
-    tags: Tag[];
+    tags: Promise<Tag[]>;
 
-    @OneToMany(() => Member, member => member.board, {cascade: true, eager: true})
-    members: Member[];
+    @OneToMany(() => Member, member => member.board, {cascade: true})
+    members: Promise<Member[]>;
 
     @CreateDateColumn({
         name: "created_at",
@@ -40,16 +40,31 @@ export class Board {
         this.name = name;
     }
 
+    async getGroups(): Promise<Group[]> {
+        return (await this.groups).map(group => {
+            group.board = this;
+            return group;
+        })
+    }
+
+    async getMembers(): Promise<Member[]> {
+        return (await this.members).map(member => {
+            member.board = this;
+            return member;
+        });
+    }
+
     async response(isAssign: boolean = false): Promise<BoardResponse> {
-        const groups = (await this.groups).map(group => group.response());
+        const groups = Promise.all((await this.getGroups()).map(async group => await group.response()));
+        const members = Promise.all((await this.getMembers()).map(async member => await member.response()));
 
         return {
             boardID: this.boardID,
             isAssign,
-            members: this.members.map(member => member.response()),
+            members: await members,
             name: this.name,
             owner: this.owner,
-            groups,
+            groups: await groups,
         };
     }
 }

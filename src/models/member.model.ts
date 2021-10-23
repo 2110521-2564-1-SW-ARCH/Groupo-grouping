@@ -7,11 +7,11 @@ import {MemberResponse} from "groupo-shared-service/apiutils/messages";
 export class Member {
     @PrimaryColumn({name: "email"}) email: string;
 
-    @ManyToOne(() => Board, board => board.groups, {primary: true})
+    @ManyToOne(() => Board, board => board.groups, {primary: true, eager: true})
     @JoinColumn({name: "board_id"})
     board: Board;
 
-    @ManyToOne(() => Group, group => group.members, {nullable: true})
+    @ManyToOne(() => Group, group => group.members, {nullable: true, eager: true})
     @JoinColumn({name: "group_id"})
     group: Group;
 
@@ -20,7 +20,7 @@ export class Member {
         this.board = board;
     }
 
-    response(): MemberResponse {
+    async response(): Promise<MemberResponse> {
         return {
             email: this.email,
             boardID: this.board.boardID,
