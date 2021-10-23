@@ -64,6 +64,6 @@ export const remove = async (owner: string, groupID: string) => {
  * transit user to another group
  */
 export const transit = async (email: string, boardID: string, groupID: string) => {
-    const query = `UPDATE member SET group_id = ${"'" + groupID + "'" || "NULL"} WHERE member.board_id = '${boardID}' and member.email = '${email}';`;
+    const query = `UPDATE member SET group_id = ${groupID !== "unassigned" ? "'" + groupID + "'" : "NULL"} WHERE member.board_id = '${boardID}' and member.email = '${email}';`;
     await getManager().query(query);
 };
