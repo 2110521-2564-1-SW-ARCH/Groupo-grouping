@@ -1,8 +1,8 @@
 import {getConnection} from "typeorm";
 import {Group} from "../models/group.model";
 import {NotFoundError} from "groupo-shared-service/apiutils/errors";
-import {Member} from "../models/member.model";
-import * as BoardService from "../services/board.service";
+import * as BoardService from "./board.service";
+import * as MemberService from "./member.service";
 
 const save = async (group: Group) => {
     await getConnection().getRepository(Group).save(group);
@@ -76,9 +76,19 @@ export const remove = async (owner: string, groupID: string) => {
 /**
  * transit user to another group
  * @param email
- * @param fromGroupID
- * @param toGroupID
+ * @param boardID
+ * @param groupID
  */
-export const transit = async (email: string, fromGroupID: string, toGroupID: string) => {
-    console.log(email, fromGroupID, toGroupID);
+export const transit = async (email: string, boardID: string, groupID: string) => {
+    const member = await MemberService.findByEmailAndBoard(email, boardID);
+    const group: Group | null = groupID ? await findByID(groupID) : null;
+
+    // if groupID is empty, remove from current group
+    if (group === null) {
+        member.group = null;
+    } else {
+        member.group = group;
+    }
+
+    await MemberService.save(member);
 };

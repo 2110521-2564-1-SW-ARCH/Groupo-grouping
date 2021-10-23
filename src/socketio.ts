@@ -7,7 +7,7 @@ import {handler as grpcHandler, logger} from "groupo-shared-service/services/log
 import * as GroupService from "./services/group.service";
 import {verifyAuthorizationIncomingHeaders} from "groupo-shared-service/services/authentication";
 
-export const io = new Server(server);
+export const io = new Server(server, {cors: {origin: "*"}});
 
 io.on("connection", (socket) => {
     const {email} = verifyAuthorizationIncomingHeaders(socket.handshake.headers);
@@ -17,9 +17,9 @@ io.on("connection", (socket) => {
 
     socket.join(boardID);
 
-    socket.on("transit", (from, to) => {
-        GroupService.transit(email, from, to).then(() => {
-            io.to(boardID).emit("transit", email, from, to);
+    socket.on("transit", (groupID) => {
+        GroupService.transit(email, boardID, groupID).then(() => {
+            io.to(boardID).emit("transit", email, groupID);
         }).catch(err => console.log(err));
     });
 

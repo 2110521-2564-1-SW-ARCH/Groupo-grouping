@@ -4,6 +4,7 @@ import {Tag} from "../models/tag.model";
 import {Group} from "../models/group.model";
 import {Member} from "../models/member.model";
 import {UnauthorizedError} from "groupo-shared-service/apiutils/errors";
+import * as MemberService from "./member.service";
 
 const save = async (board: Board) => {
     await getConnection().getRepository(Board).save(board);
@@ -120,7 +121,7 @@ export const listMember = async (owner: string, boardID: string): Promise<Member
  * @param email
  */
 export const findAll = async (email: string): Promise<{ board: Board, isAssign: boolean }[]> => {
-    const members = await getConnection().getRepository(Member).find({where: {email}});
+    const members = await MemberService.findByEmail(email);
 
     return members.map(member => {
         return {board: member.board, isAssign: !!(member.group)};
