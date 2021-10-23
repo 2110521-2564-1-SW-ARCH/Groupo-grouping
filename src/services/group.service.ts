@@ -2,7 +2,6 @@ import {getConnection, getManager} from "typeorm";
 import {Group} from "../models/group.model";
 import {NotFoundError} from "groupo-shared-service/apiutils/errors";
 import * as BoardService from "./board.service";
-import * as MemberService from "./member.service";
 
 const save = async (group: Group) => {
     await getConnection().getRepository(Group).save(group);
