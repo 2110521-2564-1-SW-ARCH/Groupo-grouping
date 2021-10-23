@@ -10,8 +10,8 @@ import {verifyAuthorization} from "groupo-shared-service/services/authentication
 export const io = new Server(server, {cors: {origin: "*"}});
 
 io.on("connection", (socket) => {
-    const {email} = verifyAuthorization(socket.handshake.headers.authorization || "");
-    const {boardID} = socket.handshake.query as {boardID: string};
+    const {boardID, token} = socket.handshake.query as {boardID: string, token: string};
+    const {email} = verifyAuthorization(token);
     const connectionLogger = logger.set("boardID", boardID);
     LoggingGrpcClient.info(connectionLogger.message("socket.io connected").proto(), grpcHandler);
 
