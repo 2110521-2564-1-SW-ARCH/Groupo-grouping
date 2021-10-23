@@ -2,7 +2,6 @@ import {
     Column,
     CreateDateColumn,
     Entity,
-    Generated,
     JoinColumn,
     ManyToOne,
     OneToMany,
@@ -11,7 +10,6 @@ import {
 } from "typeorm";
 import {Board} from "./board.model";
 import {Member} from "./member.model";
-import {GroupResponse} from "groupo-shared-service/apiutils/messages";
 
 @Entity("group")
 export class Group {
@@ -46,23 +44,5 @@ export class Group {
         this.board = board;
         this.name = name;
         this.description = description;
-    }
-
-    // since typeorm does not work on cyclic, we have to assign cyclic field by ourself
-    async getMembers(): Promise<Member[]> {
-        return (await this.members).map(member => {
-            member.board = this.board;
-            member.group = this;
-            return member;
-        });
-    }
-
-    async response(): Promise<GroupResponse> {
-        return {
-            groupID: this.groupID,
-            description: this.description,
-            members: [],
-            name: this.name,
-        };
     }
 }

@@ -6,12 +6,12 @@ import {
     BoardResponse,
     CreateBoardRequest,
     CreateBoardResponse,
-    json, MemberResponse,
+    json,
+    MemberResponse,
     newAPIResponse
 } from "groupo-shared-service/apiutils/messages";
 import {verifyAuthorizationHeader} from "groupo-shared-service/services/authentication";
 import {StatusCodes} from "http-status-codes";
-import {mapMemberResponse} from "../models/member.model";
 
 const getBoardID = (req: express.Request): string => {
     return req.params.boardID;
@@ -66,7 +66,7 @@ export const listMember: express.Handler = catcher(async (req: express.Request, 
 
     const members = await BoardService.listMembers(email, getBoardID(req));
 
-    json(res, newAPIResponse<MemberResponse[]>(StatusCodes.OK, members.map(mapMemberResponse)));
+    json(res, newAPIResponse<MemberResponse[]>(StatusCodes.OK, members));
     next();
 });
 

@@ -2,7 +2,6 @@ import {Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, Upd
 import {Group} from "./group.model";
 import {Tag} from "./tag.model";
 import {Member} from "./member.model";
-import {BoardResponse} from "groupo-shared-service/apiutils/messages";
 
 export interface BoardQueryResult {
     board_id: string;
@@ -49,32 +48,5 @@ export class Board {
     constructor(owner: string, name: string) {
         this.owner = owner;
         this.name = name;
-    }
-
-    async getGroups(): Promise<Group[]> {
-        return (await this.groups).map(group => {
-            group.board = this;
-            return group;
-        });
-    }
-
-    async getMembers(): Promise<Member[]> {
-        return (await this.members).map(member => {
-            member.board = this;
-            return member;
-        });
-    }
-
-    async response(isAssign: boolean = false): Promise<BoardResponse> {
-        const groups = Promise.all((await this.getGroups()).map(async group => await group.response()));
-
-        return {
-            boardID: this.boardID,
-            isAssign,
-            unAssignedMember: [],
-            name: this.name,
-            owner: this.owner,
-            groups: await groups,
-        };
     }
 }

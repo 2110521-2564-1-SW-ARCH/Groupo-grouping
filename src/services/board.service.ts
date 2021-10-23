@@ -4,17 +4,8 @@ import {Tag} from "../models/tag.model";
 import {Group} from "../models/group.model";
 import {Member, MemberQueryResult} from "../models/member.model";
 import {UnauthorizedError} from "groupo-shared-service/apiutils/errors";
-import * as MemberService from "./member.service";
 import {CountQueryResult} from "./share.interface";
-import {BoardResponse, GroupResponse} from "groupo-shared-service/apiutils/messages";
-
-interface MemberGroupQueryResult {
-    email: string;
-    group_id: string;
-    name: string;
-    description: string | null;
-    created_at: Date;
-}
+import {BoardResponse, MemberResponse} from "groupo-shared-service/apiutils/messages";
 
 /**
  * verify if `owner` is actually the owner of `boardID`
@@ -120,11 +111,20 @@ export const join = async (email: string, boardID: string) => {
 /**
  * list all member for specific `boardID`
  */
-export const listMembers = async (email: string, boardID: string): Promise<MemberQueryResult[]> => {
+export const listMembers = async (email: string, boardID: string): Promise<MemberResponse[]> => {
     if (!(await verifyMember(email, boardID))) {
         throw new UnauthorizedError("this user cannot view member list");
     }
-    return await getMembers(boardID);
+
+    const memberQueryResult = await getMembers(boardID);
+
+    return memberQueryResult.map(m => {
+        return {
+            email: m.email,
+            boardID: m.board_id,
+            groupID: m.group_id,
+        };
+    });
 };
 
 /**
