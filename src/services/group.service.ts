@@ -74,16 +74,11 @@ export const remove = async (owner: string, groupID: string) => {
 };
 
 /**
- * assign specific member to a group
+ * transit user to another group
  * @param email
- * @param groupID
+ * @param fromGroupID
+ * @param toGroupID
  */
-export const assignMember = async (email: string, groupID: string | null) => {
-    const group = await findByID(groupID);
-    const members = await (await group.board).members;
-
-    const member = members.find(m => m.email === email);
-    member.group = group;
-
-    await getConnection().getRepository(Member).save(member);
+export const transit = async (email: string, fromGroupID: string, toGroupID: string) => {
+    console.log(email, fromGroupID, toGroupID);
 };
