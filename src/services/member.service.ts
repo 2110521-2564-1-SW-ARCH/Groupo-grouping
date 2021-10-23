@@ -17,4 +17,4 @@ export const findByEmailAndBoard = async (email: string, boardID: string): Promi
 
 export const save = async (member: Member) => {
     await getConnection().getRepository(Member).save(member);
-}
+};

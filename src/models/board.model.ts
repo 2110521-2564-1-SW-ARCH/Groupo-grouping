@@ -44,7 +44,7 @@ export class Board {
         return (await this.groups).map(group => {
             group.board = this;
             return group;
-        })
+        });
     }
 
     async getMembers(): Promise<Member[]> {

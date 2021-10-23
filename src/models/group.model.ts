@@ -51,6 +51,7 @@ export class Group {
     // since typeorm does not work on cyclic, we have to assign cyclic field by ourself
     async getMembers(): Promise<Member[]> {
         return (await this.members).map(member => {
+            member.board = this.board;
             member.group = this;
             return member;
         });
