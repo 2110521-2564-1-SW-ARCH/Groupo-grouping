@@ -5,12 +5,12 @@ import {LoggingGrpcClient} from "groupo-shared-service/grpc/client";
 import {handler as grpcHandler, logger} from "groupo-shared-service/services/logger";
 
 import * as GroupService from "./services/group.service";
-import {verifyAuthorizationIncomingHeaders} from "groupo-shared-service/services/authentication";
+import {verifyAuthorization} from "groupo-shared-service/services/authentication";
 
 export const io = new Server(server, {cors: {origin: "*"}});
 
 io.on("connection", (socket) => {
-    const {email} = verifyAuthorizationIncomingHeaders(socket.handshake.headers);
+    const {email} = verifyAuthorization(socket.handshake.headers.authorization || "");
     const {boardID} = socket.handshake.query as {boardID: string};
     const connectionLogger = logger.set("boardID", boardID);
     LoggingGrpcClient.info(connectionLogger.message("socket.io connected").proto(), grpcHandler);
