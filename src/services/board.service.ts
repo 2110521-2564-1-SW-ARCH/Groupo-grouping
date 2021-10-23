@@ -3,25 +3,31 @@ import {Board} from "../models/board.model";
 import {Tag} from "../models/tag.model";
 import {Group} from "../models/group.model";
 import {Member} from "../models/member.model";
-import {NotFoundError, UnauthorizedError} from "groupo-shared-service/apiutils/errors";
+import {UnauthorizedError} from "groupo-shared-service/apiutils/errors";
 
-const saveBoard = async (board: Board) => {
-    for (const member of board.members) {
-        member.board = board;
-    }
+const save = async (board: Board) => {
     await getConnection().getRepository(Board).save(board);
 };
 
-export const createBoard = async (owner: string, name: string, totalGroup: number, tags: Record<string, string[]>): Promise<string> => {
-    const board = new Board(owner, name, totalGroup);
+/**
+ * create new board with specific groups and tags
+ * @param owner
+ * @param name
+ * @param totalGroup
+ * @param tags
+ */
+export const create = async (owner: string, name: string, totalGroup: number, tags: Record<string, string[]>): Promise<string> => {
+    const board = new Board(owner, name);
     await getConnection().getRepository(Board).insert(board);
 
+    // pre create group
     const groups: Group[] = [];
     for (let i = 0; i < totalGroup; i++) {
-        groups.push(new Group(board, "Untitled - " + (i+1)));
+        groups.push(new Group(board, `Group ${i+1}`));
     }
     board.groups = Promise.resolve(groups);
 
+    // pre create tag
     const tagList: Tag[] = [];
     for (const tag of Object.keys(tags)) {
         for (const value of tags[tag]) {
@@ -30,51 +36,39 @@ export const createBoard = async (owner: string, name: string, totalGroup: numbe
     }
     board.tags = tagList;
 
+    // automatically set owner to be a member of the board
     board.members = [new Member(owner, board)];
 
-    await saveBoard(board);
+    await save(board);
 
     return board.boardID;
 };
 
-export const createGroup = async (owner: string, boardID: string, name = "Untitled", description: string | null = null): Promise<string> => {
-    const board = await getConnection().getRepository(Board).findOneOrFail({where: {owner, boardID}});
-    const group = new Group(board, name, description);
-    return group.groupID;
-}
+/**
+ * get board by ID
+ * @param boardID
+ */
+export const findByID = async (boardID: string): Promise<Board> => {
+    return await getConnection().getRepository(Board).findOneOrFail({where: {boardID}});
+};
 
-export const updateGroup = async (owner: string, groupID: string, name = "Untitled", description: string | null = null) => {
-    const group = await getConnection().getRepository(Group).findOneOrFail({where: {groupID}});
-    await getConnection().getRepository(Board).findOneOrFail({where: {owner, boardID: group.board.boardID}});
-    group.name = name;
-    group.description = description;
-    await getConnection().getRepository(Group).save(group);
-}
+/**
+ * get board by ID and owner email
+ * @param owner
+ * @param boardID
+ */
+export const findByOwnerAndID = async (owner: string, boardID: string): Promise<Board> => {
+    return await getConnection().getRepository(Board).findOneOrFail({where: {owner, boardID}});
+};
 
-
-export const deleteGroup = async (owner: string, groupID: string) => {
-    const group = await getConnection().getRepository(Group).findOneOrFail({where: {groupID}});
-    await getConnection().getRepository(Board).findOneOrFail({where: {owner, boardID: group.board.boardID}});
-    await getConnection().getRepository(Group).delete(group);
-}
-
-export const assignToGroup = async (email: string, boardID: string, groupID: string | null) => {
-    const group = await getConnection().getRepository(Group).findOneOrFail({where: {groupID}});
-
-    if (group.board.boardID != boardID) {
-        throw new NotFoundError("Group not found");
-    }
-
-    const board = await getConnection().getRepository(Board).findOneOrFail({where: {boardID}});
-    const member = board.members.find(member => member.email == email);
-    member.board = board;
-    member.group = group;
-
-    await getConnection().getRepository(Member).save(member);
-}
-
+/**
+ * add new members to specific `boardID`
+ * @param owner
+ * @param boardID
+ * @param members
+ */
 export const addMember = async (owner: string, boardID: string, members: string[]) => {
-    const board = await getConnection().getRepository(Board).findOneOrFail({where: {owner, boardID}});
+    const board = await findByOwnerAndID(owner, boardID);
 
     const memberSet: Set<string> = new Set(board.members.map(e => e.email));
     for (const member of members) {
@@ -83,29 +77,39 @@ export const addMember = async (owner: string, boardID: string, members: string[
         }
         board.members.push(new Member(member, board));
     }
-    await saveBoard(board);
+    await save(board);
 };
 
-export const listMembers = async (owner: string, boardID: string, filter: (member: Member) => boolean = () => true): Promise<Member[]> => {
-    const board = await getConnection().getRepository(Board).findOneOrFail({where: {owner, boardID}});
+/**
+ * join board with `boardID`
+ * @param email
+ * @param boardID
+ */
+export const join = async (email: string, boardID: string) => {
+    const board = await findByID(boardID);
+    board.members.push(new Member(email, board));
+    await save(board);
+};
+
+/**
+ * list all member for specific `boardID`
+ * @param owner
+ * @param boardID
+ * @param filter
+ */
+export const listMember = async (owner: string, boardID: string, filter: (member: Member) => boolean = () => true): Promise<Member[]> => {
+    const board = await findByID(boardID);
     if (!board.members.map(m => m.email).includes(owner)) {
         throw new UnauthorizedError("user cannot access this board");
     }
     return board.members.filter(filter);
 };
 
-export const acceptInvitation = async (email: string, boardID: string): Promise<Member> => {
-    const board = await getConnection().getRepository(Board).findOneOrFail({where: {boardID}});
-    const member = board.members.find(c => c.email == email);
-
-    member.isJoined = true;
-
-    await saveBoard(board);
-
-    return member;
-}
-
-export const listBoards = async (email: string): Promise<{board: Board, isAssign: boolean}[]> => {
+/**
+ * list all boards that this `email` is a member
+ * @param email
+ */
+export const findAll = async (email: string): Promise<{board: Board, isAssign: boolean}[]> => {
     const members = await getConnection()
         .createQueryBuilder(Member, "member")
         .where("member.email = :email", {email})
@@ -113,22 +117,5 @@ export const listBoards = async (email: string): Promise<{board: Board, isAssign
         .leftJoinAndSelect("board.members", "m")
         .getMany();
 
-    return members.map(m => ({board: m.board, isAssign: !!m.group}));
-};
-
-export const getBoard = async (email: string, boardID: string): Promise<Board> => {
-    const board = await getConnection().getRepository(Board).findOneOrFail({where: {boardID}});
-    // TODO : implement get info when join
-    // if (!board.members.map(m => m.email).includes(email)) {
-    //     throw new UnauthorizedError("user cannot access this board");
-    // }
-
-
-
-    return board;
-};
-
-export const checkOwnership = async (owner: string, boardID: string): Promise<Board> => {
-    const board = await getConnection().getRepository(Board).findOneOrFail({where: {owner, boardID}});
-    return board;
+    return members.map(member => ({board: member.board, isAssign: !!member.group}));
 };

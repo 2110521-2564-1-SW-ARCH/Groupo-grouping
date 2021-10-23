@@ -1,13 +1,7 @@
 import {Column, Entity, JoinColumn, ManyToOne, PrimaryColumn} from "typeorm";
 import {Board} from "./board.model";
 import {Group} from "./group.model";
-
-export interface MemberResponse {
-    email: string;
-    boardID: string,
-    groupID: string;
-    isJoined: boolean;
-}
+import {MemberResponse} from "groupo-shared-service/apiutils/messages";
 
 @Entity("member")
 export class Member {
@@ -17,12 +11,9 @@ export class Member {
     @JoinColumn({name: "board_id"})
     board: Board;
 
-    @ManyToOne(() => Group, group => group.members)
+    @ManyToOne(() => Group, group => group.members, {nullable: true})
     @JoinColumn({name: "group_id"})
     group: Group;
-
-    @Column({name: "is_joined", default: false})
-    isJoined: boolean;
 
     constructor(email: string, board: Board) {
         this.email = email;
@@ -33,8 +24,7 @@ export class Member {
         return {
             email: this.email,
             boardID: this.board.boardID,
-            groupID: this.group.groupID,
-            isJoined: this.isJoined,
+            groupID: this.group ? this.group.groupID : null,
         };
     }
 }
