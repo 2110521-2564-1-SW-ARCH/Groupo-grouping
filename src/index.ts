@@ -32,16 +32,9 @@ app.use(errorHandler);
 
 // create custom server
 import http from "http";
+export const server = http.createServer(app);
 
-const server = http.createServer(app);
-
-import {Server} from "socket.io";
-
-const io = new Server(server);
-
-io.on("connection", () => {
-    console.log("connect");
-});
+import "./socketio";
 
 // start server
 const port = process.env.APP_PORT || "8081";
