@@ -178,7 +178,7 @@ const queryResultMapping = async (email: string, boardQueryResults: BoardQueryRe
 
     Object.values(boards).forEach(board => {
         board.totalGroups = board.groups.length;
-        board.totalMembers = board.unAssignedMember.length + board.groups.reduce((acc, curr) => curr.members.length, 0);
+        board.totalMembers = board.unAssignedMember.length + board.groups.reduce((acc, curr) => acc + curr.members.length, 0);
     });
 
     return Object.values(boards);
