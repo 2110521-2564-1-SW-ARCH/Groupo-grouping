@@ -17,7 +17,7 @@ io.on("connection", (socket) => {
     try {
         email = verifyAuthorization(token).email;
     } catch (err) {
-        LoggingGrpcClient.error(connectionLogger.message("socket.io unauthorized error").proto(), grpcHandler);
+        LoggingGrpcClient.error(connectionLogger.set("error", err).message("socket.io unauthorized error").proto(), grpcHandler);
         socket.disconnect();
         return;
     }
@@ -26,9 +26,11 @@ io.on("connection", (socket) => {
     socket.join(boardID);
 
     socket.on("transit", (groupID) => {
-        GroupService.transit(email, boardID, groupID).then(() => {
-            io.to(boardID).emit("transit", email, groupID);
-        }).catch(err => console.log(err));
+        GroupService.transit(email, boardID, groupID).then(state => {
+            io.to(boardID).emit("transit", state.email, state.groupID);
+        }).catch(err => {
+            LoggingGrpcClient.error(connectionLogger.set("error", err).message("socket.io cannot transit").proto(), grpcHandler);
+        });
     });
 
     socket.on("disconnect", () => {

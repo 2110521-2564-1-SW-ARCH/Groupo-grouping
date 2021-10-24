@@ -3,6 +3,11 @@ import {Group} from "../models/group.model";
 import {NotFoundError} from "groupo-shared-service/apiutils/errors";
 import * as BoardService from "./board.service";
 
+export interface TransitState {
+    email: string;
+    groupID: string;
+}
+
 const save = async (group: Group) => {
     await getConnection().getRepository(Group).save(group);
 };
@@ -62,7 +67,8 @@ export const remove = async (owner: string, groupID: string) => {
 /**
  * transit user to another group
  */
-export const transit = async (email: string, boardID: string, groupID: string) => {
+export const transit = async (email: string, boardID: string, groupID: string): Promise<TransitState> => {
     const query = `UPDATE member SET group_id = ${groupID !== "unassigned" ? "'" + groupID + "'" : "NULL"} WHERE member.board_id = '${boardID}' and member.email = '${email}';`;
     await getManager().query(query);
+    return {email, groupID};
 };

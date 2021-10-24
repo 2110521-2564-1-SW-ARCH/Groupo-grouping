@@ -12,6 +12,7 @@ import {
 } from "groupo-shared-service/apiutils/messages";
 import {verifyAuthorizationHeader} from "groupo-shared-service/services/authentication";
 import {StatusCodes} from "http-status-codes";
+import {io} from "../socketio";
 
 const getBoardID = (req: express.Request): string => {
     return req.params.boardID;
@@ -52,9 +53,11 @@ export const addMember: express.Handler = catcher(async (req: express.Request, r
 export const join: express.Handler = catcher(async (req: express.Request, res: express.Response, next: express.NextFunction) => {
     const {email} = verifyAuthorizationHeader(req);
 
-    await BoardService.join(email, getBoardID(req));
+    const boardID = getBoardID(req);
+    await BoardService.join(email, boardID);
 
     json(res, newAPIResponse<string>(StatusCodes.NO_CONTENT, ""));
+    io.to(boardID).emit("join", email);
     next();
 });
 
