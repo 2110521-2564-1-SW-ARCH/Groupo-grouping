@@ -153,6 +153,8 @@ const queryResultMapping = async (email: string, boardQueryResults: BoardQueryRe
                 name: result.name,
                 groups: [],
                 unAssignedMember: [],
+                totalGroups: 0,
+                totalMembers: 0,
             };
         }
         boards[result.board_id].groups.push({
@@ -173,6 +175,11 @@ const queryResultMapping = async (email: string, boardQueryResults: BoardQueryRe
             board.isAssign = true;
         }
     }));
+
+    Object.values(boards).forEach(board => {
+        board.totalGroups = board.groups.length;
+        board.totalMembers = board.unAssignedMember.length + board.groups.reduce((acc, curr) => curr.members.length, 0);
+    });
 
     return Object.values(boards);
 };
