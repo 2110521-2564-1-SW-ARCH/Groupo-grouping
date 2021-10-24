@@ -30,15 +30,9 @@ app.use(routes);
 app.use(httpLogger);
 app.use(errorHandler);
 
-// create custom server
-import http from "http";
-export const server = http.createServer(app);
-
-import "./socketio";
-
 // start server
 const port = process.env.APP_PORT || "8081";
-server.listen(port, () => {
+app.listen(port, () => {
     LoggingGrpcClient.Info(logger.message("start groupo-grouping successfully").proto(), grpcHandler);
     LoggingGrpcClient.Info(logger.set("APP_PORT", port).message("groupo-grouping is running").proto(), grpcHandler);
 });

@@ -1,11 +1,14 @@
-import {server} from "./index";
-
 import {Server} from "socket.io";
 import {LoggingGrpcClient} from "groupo-shared-service/grpc/client";
 import {handler as grpcHandler, logger} from "groupo-shared-service/services/logger";
 
 import * as GroupService from "./services/group.service";
 import {verifyAuthorization} from "groupo-shared-service/services/authentication";
+
+// create custom server
+import http from "http";
+
+export const server = http.createServer();
 
 export const io = new Server(server, {cors: {origin: "*"}});
 
@@ -37,4 +40,9 @@ io.on("connection", (socket) => {
         socket.leave(boardID);
         LoggingGrpcClient.info(connectionLogger.message("socket.io disconnected").proto(), grpcHandler);
     });
+});
+
+const port = process.env.APP_PORT || "8082";
+server.listen(port, () => {
+    LoggingGrpcClient.info(logger.set("SOCKET_PORT", port).message("socket.io listening").proto(), grpcHandler);
 });
