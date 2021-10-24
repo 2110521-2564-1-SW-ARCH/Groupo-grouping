@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: groupo-grouping
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: groupo-grouping
+  template:
+    metadata:
+      labels:
+        app: groupo-grouping
+    spec:
+      containers:
+      - name: groupo-grouping
+        image: asia.gcr.io/groupo-326912/groupo-grouping:latest
+        ports:
+        - containerPort: 8081
+        env:
+        - name: MYSQL_HOST
+          value: "mysql"
+        - name: MYSQL_USER
+          value: "root"
+        - name: MYSQL_PASSWORD
+          value: "grouposqldb"
+        - name: MYSQL_DB
+          value: "groupo"
+        - name: JWT_SECRET
+          value: "groupo"
+        - name: GRPC_SERVER_HOST
+          value: "groupo-logging"
+        - name: GRPC_SERVER_PORT
+          value: "40043"
+        resources:
+          requests:
+            memory: "500Mi"
+            cpu: "250m"
+          limits:
+            memory: "500Mi"
+            cpu: "250m"
