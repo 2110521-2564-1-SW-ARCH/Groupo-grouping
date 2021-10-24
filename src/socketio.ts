@@ -28,9 +28,9 @@ io.on("connection", (socket) => {
 
     socket.join(boardID);
 
-    socket.on("transit", (groupID) => {
-        GroupService.transit(email, boardID, groupID).then(state => {
-            io.to(boardID).emit("transit", state.email, state.groupID);
+    socket.on("transit", (groupID, position) => {
+        GroupService.transit(email, boardID, groupID, position).then(state => {
+            io.to(boardID).emit("transit", state.email, state.groupID, state.position);
         }).catch(err => {
             LoggingGrpcClient.error(connectionLogger.set("error", err).message("socket.io cannot transit").proto(), grpcHandler);
         });

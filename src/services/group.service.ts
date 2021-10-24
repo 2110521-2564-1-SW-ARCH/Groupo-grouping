@@ -6,6 +6,7 @@ import * as BoardService from "./board.service";
 export interface TransitState {
     email: string;
     groupID: string;
+    position: number;
 }
 
 const save = async (group: Group) => {
@@ -67,8 +68,8 @@ export const remove = async (owner: string, groupID: string) => {
 /**
  * transit user to another group
  */
-export const transit = async (email: string, boardID: string, groupID: string): Promise<TransitState> => {
+export const transit = async (email: string, boardID: string, groupID: string, position: number): Promise<TransitState> => {
     const query = `UPDATE member SET group_id = ${groupID !== "unassigned" ? "'" + groupID + "'" : "NULL"} WHERE member.board_id = '${boardID}' and member.email = '${email}';`;
     await getManager().query(query);
-    return {email, groupID};
+    return {email, groupID, position};
 };
