@@ -42,7 +42,7 @@ io.on("connection", (socket) => {
     });
 });
 
-const port = process.env.APP_PORT || "8082";
+const port = process.env.SOCKET_PORT || "8082";
 server.listen(port, () => {
     LoggingGrpcClient.info(logger.set("SOCKET_PORT", port).message("socket.io listening").proto(), grpcHandler);
 });
