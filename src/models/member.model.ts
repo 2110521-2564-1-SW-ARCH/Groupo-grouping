@@ -6,6 +6,7 @@ export interface MemberQueryResult {
     email: string;
     board_id: string;
     group_id: string | null;
+    tag: string | null;
 }
 
 @Entity("member")

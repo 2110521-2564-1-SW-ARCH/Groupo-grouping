@@ -1,4 +1,5 @@
 import * as GroupService from "../services/group.service";
+import * as TagService from "../services/tag.service";
 import {LoggingGrpcClient} from "groupo-shared-service/grpc/client";
 import {handler as grpcHandler} from "groupo-shared-service/services/logger";
 import {SocketIOCtx} from "groupo-shared-service/types/socketio";
@@ -12,14 +13,17 @@ export const transitHandlerBuilder = (ctx: SocketIOCtx) => {
     return (groupID: string, position: number) => {
         ctx = {...ctx, logger: ctx.logger.set("groupID", groupID).set("position", position.toString())};
         GroupService.transit(ctx, groupID, position).catch(err => {
-            LoggingGrpcClient.error(ctx.logger.setError(err).message("cannot transit user"), grpcHandler);
+            LoggingGrpcClient.error(ctx.logger.setError(err).message("cannot transit user").proto(), grpcHandler);
         });
     };
 };
 
 export const tagHandlerBuilder = (ctx: SocketIOCtx) => {
-    return (action: "") => {
-
+    return (name: string) => {
+        ctx = {...ctx, logger: ctx.logger.set("name", name)};
+        TagService.tagMember(ctx, name).catch(err => {
+            LoggingGrpcClient.error(ctx.logger.setError(err).message("cannot create group").proto(), grpcHandler);
+        });
     };
 };
 

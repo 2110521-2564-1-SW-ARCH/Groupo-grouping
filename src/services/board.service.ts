@@ -124,14 +124,18 @@ export const listBoards = async (email: string): Promise<BoardResponse[]> => {
 const queryResultMapping = async (email: string, boardQueryResults: BoardQueryResult[]): Promise<BoardResponse[]> => {
     const boards: Record<string, BoardResponse> = {};
 
+    // aggregate board by group
     await Promise.all(boardQueryResults.map(async (result: BoardQueryResult) => {
+        const tags: string[] = JSON.parse(result.tags);
+
         if (!boards[result.board_id]) {
             boards[result.board_id] = {
                 boardID: result.board_id,
                 isAssign: false,
                 owner: result.owner,
                 name: result.name,
-                tags: JSON.parse(result.tags),
+                tags: tags.map(tag => ({name: tag, members: []})),
+                unTaggedMember: [],
                 groups: [],
                 unAssignedMember: [],
                 totalGroups: 0,
@@ -146,12 +150,19 @@ const queryResultMapping = async (email: string, boardQueryResults: BoardQueryRe
         });
     }));
 
+    // append member for each boar
     await Promise.all(Object.values(boards).map(async (board) => {
         const members = await getMembers(board.boardID);
         for (const m of members.filter(e => e.group_id !== null)) {
             board.groups.find(g => g.groupID === m.group_id).members.push(m.email);
         }
         board.unAssignedMember = members.filter(e => e.group_id === null).map(e => e.email);
+
+        for (const m of members.filter(e => e.tag !== null)) {
+            console.log(m);
+            board.tags.find(t => t.name === m.tag).members.push(m.email);
+        }
+        board.unTaggedMember = members.filter(e => e.tag === null).map(e => e.email);
         if (!!members.find(m => m.email === email) && !board.unAssignedMember.includes(email)) {
             board.isAssign = true;
         }

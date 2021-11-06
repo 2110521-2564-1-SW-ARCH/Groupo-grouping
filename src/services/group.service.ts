@@ -57,8 +57,8 @@ export const remove = async (ctx: SocketIOCtx, groupID: string) => {
 /**
  * transit user to another group
  */
-export const transit = async (ctx: SocketIOCtx, groupID: string, position: number) => {
-    const query = `UPDATE member SET group_id = ${GetNullableSQLString(groupID, "unassigned")} WHERE member.board_id = '${ctx.boardID}' and member.email = '${ctx.email}';`;
+export const transit = async (ctx: SocketIOCtx, groupID: string | null, position: number) => {
+    const query = `UPDATE member SET group_id = ${GetNullableSQLString(groupID)} WHERE member.board_id = '${ctx.boardID}' and member.email = '${ctx.email}';`;
     await getManager().query(query);
 
     ctx.io.to(ctx.roomID).emit(TransitSocketEvent, ctx.email, groupID, position);
