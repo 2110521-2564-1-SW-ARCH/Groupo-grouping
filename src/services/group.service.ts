@@ -8,6 +8,7 @@ import {LoggingGrpcClient} from "groupo-shared-service/grpc/client";
 import {handler as grpcHandler} from "groupo-shared-service/services/logger";
 import {GroupInfo} from "./interface";
 import {GetNullableSQLString} from "../utils/sql";
+import {MemberQueryResult} from "../models/member.model";
 
 const canModifyGroup = async (ctx: SocketIOCtx) => {
     const isOwner = await BoardService.isOwner(ctx.email, ctx.boardID);
@@ -52,6 +53,14 @@ export const remove = async (ctx: SocketIOCtx, groupID: string) => {
     await getManager().query(query);
     ctx.io.to(ctx.roomID).emit(GroupSocketEvent, "delete", groupID);
     LoggingGrpcClient.info(ctx.logger.message("delete group successfully").proto(), grpcHandler);
+
+    const memberQuery = `SELECT * FROM member WHERE member.board_id = ${ctx.boardID} and member.group_id = ${groupID};`;
+    const members: MemberQueryResult[] = await getManager().query(memberQuery);
+    const unassignedQuery = `UPDATE member SET group_id = NULL WHERE member.board_id = ${ctx.boardID} and member.group_id = ${groupID};`;
+    await getManager().query(unassignedQuery);
+    for (const member of members) {
+        ctx.io.to(ctx.roomID).emit(TransitSocketEvent, member.email, null, 0);
+    }
 };
 
 /**
