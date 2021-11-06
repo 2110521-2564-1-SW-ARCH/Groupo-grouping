@@ -6,8 +6,6 @@ import {
     ProfileResponse
 } from "groupo-shared-service/apiutils/messages";
 
-import io from "socket.io-client";
-
 const userHost = "http://localhost:8080";
 const groupingHost = "http://localhost:8081";
 const groupingSocket = "http://localhost:8082";
@@ -30,7 +28,6 @@ for (let i = 0; i < 4; i++) {
 
 const password = "root";
 const accessTokens = emails.map(() => "");
-const sockets = emails.map(() => io());
 
 const verifyStatus = <T>(response: APIResponse<T>, status: number) => {
     if (response.status !== status) {

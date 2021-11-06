@@ -8,6 +8,7 @@ import {GroupInfo} from "../services/interface";
 export const TransitSocketEvent = "transit";
 export const TagSocketEvent = "tag";
 export const GroupSocketEvent = "group";
+export const JoinSocketIOEvent = "join";
 
 export const transitHandlerBuilder = (ctx: SocketIOCtx) => {
     return (groupID: string, position: number) => {
@@ -31,7 +32,10 @@ export const groupHandlerBuilder = (ctx: SocketIOCtx) => {
     // groupID can be an empty string for create event
     // info is an JSON.stringify string for group info
     return (action: "create" | "update" | "delete", groupID: string, groupInfo: GroupInfo) => {
-        ctx = {...ctx, logger: ctx.logger.set("action", action).set("groupID", groupID).set("groupInfo", JSON.stringify(groupInfo))};
+        ctx = {
+            ...ctx,
+            logger: ctx.logger.set("action", action).set("groupID", groupID).set("groupInfo", JSON.stringify(groupInfo))
+        };
         switch (action) {
             case "create":
                 GroupService.create(ctx, groupInfo).catch(err => {
