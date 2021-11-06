@@ -1,75 +1,66 @@
 import {getConnection, getManager} from "typeorm";
 import {Group} from "../models/group.model";
-import {NotFoundError} from "groupo-shared-service/apiutils/errors";
+import {UnauthorizedError} from "groupo-shared-service/apiutils/errors";
 import * as BoardService from "./board.service";
+import {SocketIOCtx} from "groupo-shared-service/types/socketio";
+import {GroupSocketEvent, TransitSocketEvent} from "../socketio/handler";
+import {LoggingGrpcClient} from "groupo-shared-service/grpc/client";
+import {handler as grpcHandler} from "groupo-shared-service/services/logger";
+import {GroupInfo} from "./interface";
+import {GetNullableSQLString} from "../utils/sql";
 
-export interface TransitState {
-    email: string;
-    groupID: string;
-    position: number;
-}
-
-const save = async (group: Group) => {
-    await getConnection().getRepository(Group).save(group);
+const canModifyGroup = async (ctx: SocketIOCtx) => {
+    const isOwner = await BoardService.isOwner(ctx.email, ctx.boardID);
+    if (!isOwner) {
+        throw new UnauthorizedError("access denied");
+    }
 };
 
 /**
  * create group with specific `name` and `description`
  */
-export const create = async (owner: string, boardID: string, name: string, description: string | null = null): Promise<string> => {
-    const board = await BoardService.findByOwnerAndID(owner, boardID);
-
-    const group = new Group(board, name, description);
-
-    await save(group);
-
-    return group.groupID;
+export const create = async (ctx: SocketIOCtx, groupInfo: GroupInfo) => {
+    await canModifyGroup(ctx);
+    const insertResult = await getConnection()
+        .createQueryBuilder()
+        .insert()
+        .into<Group>(Group)
+        .values({name: groupInfo.name, description: groupInfo.description, board: {boardID: ctx.boardID}})
+        .execute();
+    ctx.io.to(ctx.roomID).emit(GroupSocketEvent, "create", insertResult.identifiers[0], JSON.stringify(groupInfo));
+    LoggingGrpcClient.info(ctx.logger.message("create group successfully").proto(), grpcHandler);
 };
 
 /**
- * get group by ID
+ * update group with specific `name` and `description`
  */
-export const findByID = async (groupID: string): Promise<Group> => {
-    return await getConnection().getRepository(Group).findOneOrFail({where: {groupID}});
-};
-
-/**
- * get group by ID and owner email
- */
-export const findByOwnerAndID = async (owner: string, groupID: string): Promise<Group> => {
-    const group = await findByID(groupID);
-    const board = await group.board;
-    if (board.owner !== owner) {
-        throw new NotFoundError();
-    }
-    return group;
-};
-
-/**
- * update group information (name, description)
- */
-export const update = async (owner: string, groupID: string, name: string | null = null, description: string | null = null) => {
-    const group = await findByOwnerAndID(owner, groupID);
-
-    group.name = name || group.name;
-    group.description = description;
-
-    await save(group);
+export const update = async (ctx: SocketIOCtx, groupID: string, groupInfo: GroupInfo) => {
+    await canModifyGroup(ctx);
+    const query = `UPDATE \`group\` SET name = '${groupInfo.name}', description = ${GetNullableSQLString(groupInfo.description)} WHERE group.group_id = '${groupID}';`;
+    console.log(query);
+    await getManager().query(query);
+    ctx.io.to(ctx.roomID).emit(GroupSocketEvent, "update", groupID, JSON.stringify(groupInfo));
+    LoggingGrpcClient.info(ctx.logger.message("update group successfully").proto(), grpcHandler);
 };
 
 /**
  * remove group by ID
  */
-export const remove = async (owner: string, groupID: string) => {
-    const group = await findByOwnerAndID(owner, groupID);
-    await getConnection().getRepository(Group).delete(group);
+export const remove = async (ctx: SocketIOCtx, groupID: string) => {
+    await canModifyGroup(ctx);
+    const query = `DELETE FROM \`group\` WHERE group.group_id = '${groupID}';`;
+    await getManager().query(query);
+    ctx.io.to(ctx.roomID).emit(GroupSocketEvent, "delete", groupID);
+    LoggingGrpcClient.info(ctx.logger.message("delete group successfully").proto(), grpcHandler);
 };
 
 /**
  * transit user to another group
  */
-export const transit = async (email: string, boardID: string, groupID: string, position: number): Promise<TransitState> => {
-    const query = `UPDATE member SET group_id = ${groupID !== "unassigned" ? "'" + groupID + "'" : "NULL"} WHERE member.board_id = '${boardID}' and member.email = '${email}';`;
+export const transit = async (ctx: SocketIOCtx, groupID: string, position: number) => {
+    const query = `UPDATE member SET group_id = ${GetNullableSQLString(groupID, "unassigned")} WHERE member.board_id = '${ctx.boardID}' and member.email = '${ctx.email}';`;
     await getManager().query(query);
-    return {email, groupID, position};
+
+    ctx.io.to(ctx.roomID).emit(TransitSocketEvent, ctx.email, groupID, position);
+    LoggingGrpcClient.info(ctx.logger.message("transit user successfully").proto(), grpcHandler);
 };

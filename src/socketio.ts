@@ -1,44 +1,42 @@
-import {Server} from "socket.io";
+import {Server, Socket} from "socket.io";
 import {LoggingGrpcClient} from "groupo-shared-service/grpc/client";
 import {handler as grpcHandler, logger} from "groupo-shared-service/services/logger";
 
-import * as GroupService from "./services/group.service";
-import {verifyAuthorization} from "groupo-shared-service/services/authentication";
-
-// create custom server
 import http from "http";
+import {DefaultEventsMap} from "socket.io/dist/typed-events";
+import {getSocketIOContext} from "groupo-shared-service/services/socketio";
+import {groupHandlerBuilder, tagHandlerBuilder, transitHandlerBuilder} from "./socketio/handler";
 
 export const server = http.createServer();
 
 export const io = new Server(server, {cors: {origin: "*"}});
 
-io.on("connection", (socket) => {
-    const {boardID, token} = socket.handshake.query as {boardID: string, token: string};
-    const connectionLogger = logger.set("boardID", boardID);
+io.on("connection", (socket: Socket<DefaultEventsMap, DefaultEventsMap>) => {
+    const ctx = getSocketIOContext(io, socket);
 
-    let email: string;
-    try {
-        email = verifyAuthorization(token).email;
-    } catch (err) {
-        LoggingGrpcClient.error(connectionLogger.set("error", err).message("socket.io unauthorized error").proto(), grpcHandler);
-        socket.disconnect();
+    if (ctx === null) {
+        LoggingGrpcClient.error(logger.message("socket.io unauthorized error").proto(), grpcHandler);
         return;
     }
-    LoggingGrpcClient.info(connectionLogger.message("socket.io connected").proto(), grpcHandler);
 
-    socket.join(boardID);
+    ctx.logger.service("grouping-service/socket.io");
 
-    socket.on("transit", (groupID, position) => {
-        GroupService.transit(email, boardID, groupID, position).then(state => {
-            io.to(boardID).emit("transit", state.email, state.groupID, state.position);
-        }).catch(err => {
-            LoggingGrpcClient.error(connectionLogger.set("error", err).message("socket.io cannot transit").proto(), grpcHandler);
-        });
-    });
+    LoggingGrpcClient.info(ctx.logger.message("connection established").proto(), grpcHandler);
 
+
+    // transit event is an event that indicate the group of the user is change
+    socket.on("transit", transitHandlerBuilder(ctx));
+
+    // tag event is an event for tag CRUD
+    socket.on("tag", tagHandlerBuilder(ctx));
+
+    // group event is an event for group CRUD
+    socket.on("group", groupHandlerBuilder(ctx));
+
+    // disconnect is on the user is disconnect
     socket.on("disconnect", () => {
-        socket.leave(boardID);
-        LoggingGrpcClient.info(connectionLogger.message("socket.io disconnected").proto(), grpcHandler);
+        socket.leave(ctx.roomID);
+        LoggingGrpcClient.info(ctx.logger.message("socket.io disconnected").proto(), grpcHandler);
     });
 });
 
