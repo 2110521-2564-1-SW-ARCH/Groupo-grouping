@@ -1,4 +1,4 @@
-import {Entity, JoinColumn, ManyToOne, PrimaryColumn} from "typeorm";
+import {Column, Entity, JoinColumn, ManyToOne, PrimaryColumn} from "typeorm";
 import {Board} from "./board.model";
 import {Group} from "./group.model";
 
@@ -6,6 +6,7 @@ export interface MemberQueryResult {
     email: string;
     board_id: string;
     group_id: string | null;
+    tag: string | null;
 }
 
 @Entity("member")
@@ -20,8 +21,11 @@ export class Member {
     @JoinColumn({name: "group_id"})
     group: Group;
 
+    @Column("text", {nullable: true}) tag: string;
+
     constructor(email: string, board: Board) {
         this.email = email;
         this.board = board;
+        this.tag = null;
     }
 }

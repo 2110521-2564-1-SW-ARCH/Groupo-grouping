@@ -1,12 +1,12 @@
 import {Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn} from "typeorm";
 import {Group} from "./group.model";
-import {Tag} from "./tag.model";
 import {Member} from "./member.model";
 
 export interface BoardQueryResult {
     board_id: string;
     owner: string;
     name: string;
+    tags: string;
     group_id: string;
     group_name: string;
     group_description: string | null;
@@ -19,12 +19,10 @@ export class Board {
 
     @Column({length: 255, name: "owner"}) owner: string;
     @Column({length: 255, name: "name"}) name: string;
+    @Column({type: "text"}) tags: string;
 
     @OneToMany(() => Group, group => group.board, {cascade: true})
     groups: Promise<Group[]>;
-
-    @OneToMany(() => Tag, tag => tag.board, {cascade: true, eager: true})
-    tags: Promise<Tag[]>;
 
     @OneToMany(() => Member, member => member.board, {cascade: true})
     members: Promise<Member[]>;
@@ -44,8 +42,9 @@ export class Board {
     })
     public updatedAt: Date;
 
-    constructor(owner: string, name: string) {
+    constructor(owner: string, name: string, tags: string[]) {
         this.owner = owner;
         this.name = name;
+        this.tags = JSON.stringify(tags);
     }
 }
