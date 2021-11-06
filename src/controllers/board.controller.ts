@@ -12,8 +12,8 @@ import {
 } from "groupo-shared-service/apiutils/messages";
 import {StatusCodes} from "http-status-codes";
 import {io} from "../socketio";
-import {getExpressRequestContext} from "../../../common/services/express";
 import {JoinSocketIOEvent} from "../socketio/handler";
+import {getExpressRequestContext} from "groupo-shared-service/services/express";
 
 const getBoardID = (req: express.Request): string => {
     return req.params.boardID;
@@ -23,11 +23,9 @@ const getBoardID = (req: express.Request): string => {
  * create a new board with specific groups and tags
  */
 export const create: express.Handler = catcher(async (req: express.Request, res: express.Response, next: express.NextFunction) => {
-    const ctx = getExpressRequestContext(req);
+    const ctx = getExpressRequestContext<CreateBoardRequest>(req);
 
-    const {name, totalGroup, tags} = req.body as CreateBoardRequest;
-
-    const boardID = await BoardService.create(ctx, name, totalGroup, tags);
+    const boardID = await BoardService.create(ctx);
 
     json(res, newAPIResponse<CreateBoardResponse>(StatusCodes.OK, {boardID}));
     next();
@@ -37,11 +35,9 @@ export const create: express.Handler = catcher(async (req: express.Request, res:
  * add new members to a board (only owner)
  */
 export const addMember: express.Handler = catcher(async (req: express.Request, res: express.Response, next: express.NextFunction) => {
-    const ctx = getExpressRequestContext(req);
+    const ctx = getExpressRequestContext<BoardInvitationRequest>(req);
 
-    const {members} = req.body as BoardInvitationRequest;
-
-    await BoardService.addMember(ctx, getBoardID(req), members);
+    await BoardService.addMember(ctx, getBoardID(req));
 
     json(res, newAPIResponse<string>(StatusCodes.NO_CONTENT, ""));
     next();
@@ -52,7 +48,7 @@ export const addMember: express.Handler = catcher(async (req: express.Request, r
  * list all members of the board
  */
 export const join: express.Handler = catcher(async (req: express.Request, res: express.Response, next: express.NextFunction) => {
-    const ctx = getExpressRequestContext(req);
+    const ctx = getExpressRequestContext<undefined>(req);
 
     const boardID = getBoardID(req);
     await BoardService.join(ctx, boardID);
@@ -66,7 +62,7 @@ export const join: express.Handler = catcher(async (req: express.Request, res: e
  * list all members of the board
  */
 export const listMember: express.Handler = catcher(async (req: express.Request, res: express.Response, next: express.NextFunction) => {
-    const ctx = getExpressRequestContext(req);
+    const ctx = getExpressRequestContext<undefined>(req);
 
     const members = await BoardService.listMembers(ctx, getBoardID(req));
 
@@ -78,7 +74,7 @@ export const listMember: express.Handler = catcher(async (req: express.Request, 
  * list all boards that the `email` is a member
  */
 export const listBoard: express.Handler = catcher(async (req: express.Request, res: express.Response, next: express.NextFunction) => {
-    const ctx = getExpressRequestContext(req);
+    const ctx = getExpressRequestContext<undefined>(req);
 
     const boards = await BoardService.listBoards(ctx);
 
@@ -90,7 +86,7 @@ export const listBoard: express.Handler = catcher(async (req: express.Request, r
  * get board information
  */
 export const findBoard: express.Handler = catcher(async (req: express.Request, res: express.Response, next: express.NextFunction) => {
-    const ctx = getExpressRequestContext(req);
+    const ctx = getExpressRequestContext<undefined>(req);
 
     json(res, newAPIResponse<BoardResponse>(StatusCodes.OK, await BoardService.findByID(ctx, getBoardID(req))));
     next();

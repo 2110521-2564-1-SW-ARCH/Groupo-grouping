@@ -4,8 +4,13 @@ import {Group} from "../models/group.model";
 import {Member, MemberQueryResult} from "../models/member.model";
 import {UnauthorizedError} from "groupo-shared-service/apiutils/errors";
 import {CountQueryResult} from "./interface";
-import {BoardResponse, MemberResponse} from "groupo-shared-service/apiutils/messages";
-import {ExpressRequestCtx} from "../../../common/types/express";
+import {
+    BoardInvitationRequest,
+    BoardResponse,
+    CreateBoardRequest,
+    MemberResponse
+} from "groupo-shared-service/apiutils/messages";
+import {ExpressRequestCtx} from "groupo-shared-service/types/express";
 
 /**
  * verify if an `email` is actually the owner of `boardID`
@@ -35,13 +40,13 @@ const getMembers = async (boardID: string): Promise<MemberQueryResult[]> => {
 /**
  * create new board with specific groups and tags
  */
-export const create = async (ctx: ExpressRequestCtx, name: string, totalGroup: number, tags: string[]): Promise<string> => {
-    const board = new Board(ctx.email, name, tags);
+export const create = async (ctx: ExpressRequestCtx<CreateBoardRequest>): Promise<string> => {
+    const board = new Board(ctx.email, ctx.body.name, ctx.body.tags);
     await getConnection().getRepository(Board).insert(board);
 
     // pre create group
     const groups: Group[] = [];
-    for (let i = 0; i < totalGroup; i++) {
+    for (let i = 0; i < ctx.body.totalGroup; i++) {
         groups.push(new Group(board, `Group ${i + 1}`));
     }
     board.groups = Promise.resolve(groups);
@@ -57,7 +62,7 @@ export const create = async (ctx: ExpressRequestCtx, name: string, totalGroup: n
 /**
  * get board by ID
  */
-export const findByID = async (ctx: ExpressRequestCtx, boardID: string): Promise<BoardResponse> => {
+export const findByID = async (ctx: ExpressRequestCtx<undefined>, boardID: string): Promise<BoardResponse> => {
     const boardSubQuery = `SELECT board_id, owner, name, tags, updated_at FROM board WHERE board.board_id = '${boardID}'`;
     const query = `SELECT b.board_id, b.owner, b.name, b.tags, b.updated_at, g.group_id, g.name as group_name, g.description as group_description FROM (${boardSubQuery}) as b INNER JOIN \`group\` as g ON g.board_id = b.board_id`;
 
@@ -70,7 +75,7 @@ export const findByID = async (ctx: ExpressRequestCtx, boardID: string): Promise
 /**
  * add new members to specific `boardID`
  */
-export const addMember = async (ctx: ExpressRequestCtx, boardID: string, members: string[]) => {
+export const addMember = async (ctx: ExpressRequestCtx<BoardInvitationRequest>, boardID: string) => {
     if (!(await isOwner(ctx.email, boardID))) {
         throw new UnauthorizedError();
     }
@@ -78,21 +83,24 @@ export const addMember = async (ctx: ExpressRequestCtx, boardID: string, members
         .createQueryBuilder()
         .insert()
         .into<Member>(Member)
-        .values(members.map(email => ({email, board: {boardID}})))
+        .values(ctx.body.members.map(email => ({email, board: {boardID}})))
         .execute();
 };
 
 /**
  * join board with `boardID`
  */
-export const join = async (ctx: ExpressRequestCtx, boardID: string) => {
-    await getConnection().createQueryBuilder().insert().into(Member).values({email: ctx.email, board: {boardID}}).execute();
+export const join = async (ctx: ExpressRequestCtx<undefined>, boardID: string) => {
+    await getConnection().createQueryBuilder().insert().into(Member).values({
+        email: ctx.email,
+        board: {boardID}
+    }).execute();
 };
 
 /**
  * list all member for specific `boardID`
  */
-export const listMembers = async (ctx: ExpressRequestCtx, boardID: string): Promise<MemberResponse[]> => {
+export const listMembers = async (ctx: ExpressRequestCtx<undefined>, boardID: string): Promise<MemberResponse[]> => {
     if (!(await isMember(ctx.email, boardID))) {
         throw new UnauthorizedError();
     }
@@ -111,7 +119,7 @@ export const listMembers = async (ctx: ExpressRequestCtx, boardID: string): Prom
 /**
  * list all boards that this `email` is a member
  */
-export const listBoards = async (ctx: ExpressRequestCtx): Promise<BoardResponse[]> => {
+export const listBoards = async (ctx: ExpressRequestCtx<undefined>): Promise<BoardResponse[]> => {
     const memberSubQuery = `SELECT * FROM member WHERE member.email = '${ctx.email}'`;
     const boardSubQuery = `SELECT board_id, owner, name, tags, updated_at FROM board NATURAL JOIN (${memberSubQuery}) as m`;
     const query = `SELECT b.board_id, b.owner, b.name, b.tags, b.updated_at, g.group_id, g.name as group_name, g.description as group_description FROM (${boardSubQuery}) as b INNER JOIN \`group\` as g ON g.board_id = b.board_id`;
