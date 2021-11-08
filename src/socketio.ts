@@ -5,7 +5,7 @@ import {handler as grpcHandler, logger} from "groupo-shared-service/services/log
 import http from "http";
 import {DefaultEventsMap} from "socket.io/dist/typed-events";
 import {getSocketIOContext} from "groupo-shared-service/services/socketio";
-import {groupHandlerBuilder, tagHandlerBuilder, transitHandlerBuilder} from "./socketio/handler";
+import {chatHandlerBuilder, groupHandlerBuilder, tagHandlerBuilder, transitHandlerBuilder} from "./socketio/handler";
 
 export const server = http.createServer();
 
@@ -32,6 +32,9 @@ io.on("connection", (socket: Socket<DefaultEventsMap, DefaultEventsMap>) => {
 
     // group event is an event for group CRUD
     socket.on("group", groupHandlerBuilder(ctx));
+
+    // TODO: implement in chat service
+    socket.on("chat", chatHandlerBuilder(ctx));
 
     // disconnect is on the user is disconnect
     socket.on("disconnect", () => {

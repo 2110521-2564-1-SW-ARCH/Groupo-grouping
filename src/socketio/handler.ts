@@ -8,6 +8,7 @@ import {GroupInfo} from "../services/interface";
 export const TransitSocketEvent = "transit";
 export const TagSocketEvent = "tag";
 export const GroupSocketEvent = "group";
+export const ChatSocketEvent = "chat";
 export const JoinSocketIOEvent = "join";
 
 export const transitHandlerBuilder = (ctx: SocketIOCtx) => {
@@ -25,6 +26,13 @@ export const tagHandlerBuilder = (ctx: SocketIOCtx) => {
         TagService.tagMember(ctx, name).catch(err => {
             LoggingGrpcClient.error(ctx.logger.setError(err).message("cannot create group").proto(), grpcHandler);
         });
+    };
+};
+
+export const chatHandlerBuilder = (ctx: SocketIOCtx) => {
+    return (message: string) => {
+        ctx = {...ctx, logger: ctx.logger.set("message", message)};
+        ctx.io.to(ctx.roomID).emit(ChatSocketEvent, ctx.email, message);
     };
 };
 
