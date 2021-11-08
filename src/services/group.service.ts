@@ -49,10 +49,6 @@ export const update = async (ctx: SocketIOCtx, groupID: string, groupInfo: Group
  */
 export const remove = async (ctx: SocketIOCtx, groupID: string) => {
     await canModifyGroup(ctx);
-    const query = `DELETE FROM \`group\` WHERE group.group_id = '${groupID}';`;
-    await getManager().query(query);
-    ctx.io.to(ctx.roomID).emit(GroupSocketEvent, "delete", groupID);
-    LoggingGrpcClient.info(ctx.logger.message("delete group successfully").proto(), grpcHandler);
 
     const memberQuery = `SELECT * FROM member WHERE member.board_id = ${ctx.boardID} and member.group_id = ${groupID};`;
     const members: MemberQueryResult[] = await getManager().query(memberQuery);
@@ -61,6 +57,11 @@ export const remove = async (ctx: SocketIOCtx, groupID: string) => {
     for (const member of members) {
         ctx.io.to(ctx.roomID).emit(TransitSocketEvent, member.email, null, 0);
     }
+
+    const query = `DELETE FROM \`group\` WHERE group.group_id = '${groupID}';`;
+    await getManager().query(query);
+    ctx.io.to(ctx.roomID).emit(GroupSocketEvent, "delete", groupID);
+    LoggingGrpcClient.info(ctx.logger.message("delete group successfully").proto(), grpcHandler);
 };
 
 /**
