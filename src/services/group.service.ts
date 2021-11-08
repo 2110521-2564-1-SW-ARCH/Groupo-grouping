@@ -52,7 +52,7 @@ export const remove = async (ctx: SocketIOCtx, groupID: string) => {
 
     const memberQuery = `SELECT * FROM member WHERE member.board_id = ${ctx.boardID} and member.group_id = ${groupID};`;
     const members: MemberQueryResult[] = await getManager().query(memberQuery);
-    const unassignedQuery = `UPDATE member SET group_id = NULL WHERE member.board_id = ${ctx.boardID} and member.group_id = ${groupID};`;
+    const unassignedQuery = `UPDATE member SET group_id = NULL WHERE member.board_id = '${ctx.boardID}' and member.group_id = '${groupID}';`;
     await getManager().query(unassignedQuery);
     for (const member of members) {
         ctx.io.to(ctx.roomID).emit(TransitSocketEvent, member.email, null, 0);
