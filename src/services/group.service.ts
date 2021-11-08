@@ -50,7 +50,7 @@ export const update = async (ctx: SocketIOCtx, groupID: string, groupInfo: Group
 export const remove = async (ctx: SocketIOCtx, groupID: string) => {
     await canModifyGroup(ctx);
 
-    const memberQuery = `SELECT * FROM member WHERE member.board_id = ${ctx.boardID} and member.group_id = ${groupID};`;
+    const memberQuery = `SELECT * FROM member WHERE member.board_id = '${ctx.boardID}' and member.group_id = '${groupID}';`;
     const members: MemberQueryResult[] = await getManager().query(memberQuery);
     const unassignedQuery = `UPDATE member SET group_id = NULL WHERE member.board_id = '${ctx.boardID}' and member.group_id = '${groupID}';`;
     await getManager().query(unassignedQuery);
