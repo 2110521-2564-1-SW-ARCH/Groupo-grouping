@@ -40,7 +40,7 @@ export const create = async (ctx: SocketIOCtx, groupInfo: GroupInfo) => {
  */
 export const update = async (ctx: SocketIOCtx, groupID: string, groupInfo: GroupInfo) => {
     await canModifyGroup(ctx);
-    const query = `UPDATE \`group\` SET name = '${groupInfo.name}', description = ${GetNullableSQLString(groupInfo.description)}, tags = ${GetNullableSQLString(JSON.stringify(groupInfo.tags))} WHERE group.group_id = '${groupID}';`;
+    const query = `UPDATE \`group\` SET name = '${groupInfo.name}', description = ${GetNullableSQLString(groupInfo.description)}, tags = ${GetNullableSQLString(JSON.stringify(groupInfo.tags))}, capacity = ${groupInfo.capacity} WHERE group.group_id = '${groupID}';`;
     console.log(query);
     await getManager().query(query);
     ctx.io.to(ctx.roomID).emit(GroupSocketEvent, "update", groupID, JSON.stringify(groupInfo));
