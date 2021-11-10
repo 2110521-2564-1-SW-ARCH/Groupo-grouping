@@ -110,5 +110,10 @@ export const autoGroup = async (ctx: ExpressRequestCtx<undefined>, boardID: stri
                 maxGroupId = group.groupID;
             }
         }
+
+        if (maxGroupId) {
+            const query = `UPDATE member SET group_id = ${maxGroupId} WHERE member.board_id = '${boardID}' and member.email = '${member.email}';`;
+            await getManager().query(query);
+        }
     }
 }
