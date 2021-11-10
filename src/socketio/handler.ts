@@ -10,6 +10,7 @@ export const TagSocketEvent = "tag";
 export const GroupSocketEvent = "group";
 export const ChatSocketEvent = "chat";
 export const JoinSocketIOEvent = "join";
+export const AutoGroupSocketEvent = "autogroup";
 
 export const transitHandlerBuilder = (ctx: SocketIOCtx) => {
     return (groupID: string, position: number) => {
@@ -61,5 +62,14 @@ export const groupHandlerBuilder = (ctx: SocketIOCtx) => {
                 });
                 break;
         }
+    };
+};
+
+export const autogroupHandlerBuilder = (ctx: SocketIOCtx) => {
+    return (boardID: string) => {
+        ctx = {...ctx, logger: ctx.logger.set("boardID", boardID)};
+        GroupService.autoGroup(ctx, boardID).catch(err => {
+            LoggingGrpcClient.error(ctx.logger.setError(err).message("cannot transit user").proto(), grpcHandler);
+        });
     };
 };

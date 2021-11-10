@@ -3,7 +3,7 @@ import {Group} from "../models/group.model";
 import {UnauthorizedError} from "groupo-shared-service/apiutils/errors";
 import * as BoardService from "./board.service";
 import {SocketIOCtx} from "groupo-shared-service/types/socketio";
-import {GroupSocketEvent, TransitSocketEvent} from "../socketio/handler";
+import {AutoGroupSocketEvent, GroupSocketEvent, TransitSocketEvent} from "../socketio/handler";
 import {LoggingGrpcClient} from "groupo-shared-service/grpc/client";
 import {handler as grpcHandler} from "groupo-shared-service/services/logger";
 import {GroupInfo} from "./interface";
@@ -78,7 +78,7 @@ export const transit = async (ctx: SocketIOCtx, groupID: string | null, position
     LoggingGrpcClient.info(ctx.logger.message("transit user successfully").proto(), grpcHandler);
 };
 
-export const autoGroup = async (ctx: ExpressRequestCtx<undefined>, boardID: string) => {
+export const autoGroup = async (ctx: SocketIOCtx, boardID: string) => {
     let board = await BoardService.findByID(ctx, boardID);
     let members: MemberQueryResult[] = shuffleArray<MemberQueryResult>(await BoardService.getMembers(boardID));
 
@@ -116,4 +116,7 @@ export const autoGroup = async (ctx: ExpressRequestCtx<undefined>, boardID: stri
             await getManager().query(query);
         }
     }
+
+    ctx.io.to(ctx.roomID).emit(AutoGroupSocketEvent, ctx.boardID);
+    LoggingGrpcClient.info(ctx.logger.message("transit user successfully").proto(), grpcHandler);
 }

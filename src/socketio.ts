@@ -36,6 +36,9 @@ io.on("connection", (socket: Socket<DefaultEventsMap, DefaultEventsMap>) => {
     // TODO: implement in chat service
     socket.on("chat", chatHandlerBuilder(ctx));
 
+    // transit event is an event that indicate the group of the user is change
+    socket.on("autogroup", transitHandlerBuilder(ctx));
+
     // disconnect is on the user is disconnect
     socket.on("disconnect", () => {
         socket.leave(ctx.roomID);
