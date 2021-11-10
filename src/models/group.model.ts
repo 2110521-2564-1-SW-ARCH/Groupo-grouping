@@ -40,7 +40,7 @@ export class Group {
     })
     public updatedAt: Date;
 
-    @Column("text")
+    @Column("text", {nullable: true})
     public tags: string;
 
     @Column("int", {default: 0})

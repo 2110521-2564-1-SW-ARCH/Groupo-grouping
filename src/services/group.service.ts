@@ -10,6 +10,8 @@ import {GroupInfo} from "./interface";
 import {GetNullableSQLString} from "../utils/sql";
 import {MemberQueryResult} from "../models/member.model";
 import { ExpressRequestCtx } from "groupo-shared-service/types/express";
+import { shuffleArray } from "../utils/shuffle";
+import { GroupResponse } from "groupo-shared-service/apiutils/messages";
 
 const canModifyGroup = async (ctx: SocketIOCtx) => {
     const isOwner = await BoardService.isOwner(ctx.email, ctx.boardID);
@@ -78,9 +80,24 @@ export const transit = async (ctx: SocketIOCtx, groupID: string | null, position
 
 export const autoGroup = async (ctx: ExpressRequestCtx<undefined>, boardID: string) => {
     let board = await BoardService.findByID(ctx, boardID);
-    let members = await BoardService.getMembers(boardID);
+    let members: MemberQueryResult[] = shuffleArray<MemberQueryResult>(await BoardService.getMembers(boardID));
+
+    const query = `UPDATE member SET group_id = null WHERE member.board_id = '${boardID}';`;
+    await getManager().query(query);
+
+    let groupCapacity: {[k: string]: number} = {};
 
     for (let member of members) {
-        let member_tags = JSON.parse(member.tag);
+        let member_tags = new Set(JSON.parse(member.tags || "[]"));
+
+        let maxScore = -1;
+        let maxGroupId = null;
+
+        let groups: GroupResponse[] = shuffleArray<GroupResponse>(board.groups);
+
+        for (let group of groups) {
+            if (!groupCapacity[group.groupID]) groupCapacity[group.groupID] = 0;
+            let group_tags = new Set(group.tags);
+        }
     }
 }

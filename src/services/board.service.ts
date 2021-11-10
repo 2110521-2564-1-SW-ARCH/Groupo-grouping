@@ -155,6 +155,7 @@ const queryResultMapping = async (email: string, boardQueryResults: BoardQueryRe
             name: result.group_name,
             description: result.group_description,
             members: [],
+            tags: JSON.parse(result.tags || "[]"),
         });
     }));
 
