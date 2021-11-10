@@ -26,7 +26,7 @@ export const create = async (ctx: SocketIOCtx, groupInfo: GroupInfo) => {
         .createQueryBuilder()
         .insert()
         .into<Group>(Group)
-        .values({name: groupInfo.name, description: groupInfo.description, board: {boardID: ctx.boardID}})
+        .values({name: groupInfo.name, description: groupInfo.description, board: {boardID: ctx.boardID}, tags: "[]"})
         .execute();
     ctx.io.to(ctx.roomID).emit(GroupSocketEvent, "create", insertResult.identifiers[0], JSON.stringify(groupInfo));
     LoggingGrpcClient.info(ctx.logger.message("create group successfully").proto(), grpcHandler);
@@ -37,7 +37,7 @@ export const create = async (ctx: SocketIOCtx, groupInfo: GroupInfo) => {
  */
 export const update = async (ctx: SocketIOCtx, groupID: string, groupInfo: GroupInfo) => {
     await canModifyGroup(ctx);
-    const query = `UPDATE \`group\` SET name = '${groupInfo.name}', description = ${GetNullableSQLString(groupInfo.description)} WHERE group.group_id = '${groupID}';`;
+    const query = `UPDATE \`group\` SET name = '${groupInfo.name}', description = ${GetNullableSQLString(groupInfo.description)}, tags = ${GetNullableSQLString(JSON.stringify(groupInfo.tags))} WHERE group.group_id = '${groupID}';`;
     console.log(query);
     await getManager().query(query);
     ctx.io.to(ctx.roomID).emit(GroupSocketEvent, "update", groupID, JSON.stringify(groupInfo));

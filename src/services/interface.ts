@@ -11,4 +11,5 @@ export interface CountQueryResult {
 export interface GroupInfo {
     name: string;
     description: string | null;
+    tags: string[];
 }
