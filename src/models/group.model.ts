@@ -40,9 +40,13 @@ export class Group {
     })
     public updatedAt: Date;
 
+    @Column("text")
+    public tags: string;
+
     constructor(board: Board, name: string, description: string | null = null) {
         this.board = board;
         this.name = name;
         this.description = description;
+        this.tags = "[]";
     }
 }

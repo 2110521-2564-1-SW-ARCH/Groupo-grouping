@@ -48,11 +48,12 @@ export const findByOwnerAndID = async (owner: string, groupID: string): Promise<
 /**
  * update group information (name, description)
  */
-export const update = async (owner: string, groupID: string, name: string | null = null, description: string | null = null) => {
+export const update = async (owner: string, groupID: string, name: string | null = null, description: string | null = null, tags: string[]) => {
     const group = await findByOwnerAndID(owner, groupID);
 
     group.name = name || group.name;
     group.description = description;
+    group.tags = JSON.stringify(tags);
 
     await save(group);
 };
