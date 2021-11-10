@@ -26,6 +26,6 @@ export class Member {
     constructor(email: string, board: Board) {
         this.email = email;
         this.board = board;
-        this.tag = null;
+        this.tag = "[]";
     }
 }

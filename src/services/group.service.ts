@@ -9,6 +9,7 @@ import {handler as grpcHandler} from "groupo-shared-service/services/logger";
 import {GroupInfo} from "./interface";
 import {GetNullableSQLString} from "../utils/sql";
 import {MemberQueryResult} from "../models/member.model";
+import { ExpressRequestCtx } from "groupo-shared-service/types/express";
 
 const canModifyGroup = async (ctx: SocketIOCtx) => {
     const isOwner = await BoardService.isOwner(ctx.email, ctx.boardID);
@@ -74,3 +75,12 @@ export const transit = async (ctx: SocketIOCtx, groupID: string | null, position
     ctx.io.to(ctx.roomID).emit(TransitSocketEvent, ctx.email, groupID, position);
     LoggingGrpcClient.info(ctx.logger.message("transit user successfully").proto(), grpcHandler);
 };
+
+export const autoGroup = async (ctx: ExpressRequestCtx<undefined>, boardID: string) => {
+    let board = await BoardService.findByID(ctx, boardID);
+    let members = await BoardService.getMembers(boardID);
+
+    for (let member of members) {
+        let member_tags = JSON.parse(member.tag);
+    }
+}

@@ -33,7 +33,7 @@ export const isMember = async (email: string, boardID: string): Promise<boolean>
 /**
  * get members of `boardID`
  */
-const getMembers = async (boardID: string): Promise<MemberQueryResult[]> => {
+export const getMembers = async (boardID: string): Promise<MemberQueryResult[]> => {
     return await getManager().query(`SELECT * FROM member WHERE board_id = '${boardID}';`);
 };
 

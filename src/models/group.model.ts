@@ -43,6 +43,9 @@ export class Group {
     @Column("text")
     public tags: string;
 
+    @Column("int", {default: 0})
+    public capacity: number;
+
     constructor(board: Board, name: string, description: string | null = null) {
         this.board = board;
         this.name = name;
