@@ -11,6 +11,9 @@ export interface BoardQueryResult {
     group_name: string;
     group_description: string | null;
     updated_at: Date;
+
+    group_tags: string;
+    group_capacity: number;
 }
 
 @Entity("board")

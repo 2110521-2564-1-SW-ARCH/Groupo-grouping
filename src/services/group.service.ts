@@ -97,7 +97,18 @@ export const autoGroup = async (ctx: ExpressRequestCtx<undefined>, boardID: stri
 
         for (let group of groups) {
             if (!groupCapacity[group.groupID]) groupCapacity[group.groupID] = 0;
+            if (groupCapacity[group.groupID] >= group.capacity) continue;
+
             let group_tags = new Set(group.tags);
+
+            let intersection = new Set([...member_tags].filter((x: string) => group_tags.has(x)));
+
+            let score = intersection.size;
+
+            if (score > maxScore) {
+                maxScore = score;
+                maxGroupId = group.groupID;
+            }
         }
     }
 }
