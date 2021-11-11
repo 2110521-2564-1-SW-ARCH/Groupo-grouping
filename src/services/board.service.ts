@@ -11,6 +11,7 @@ import {
     MemberResponse
 } from "groupo-shared-service/apiutils/messages";
 import {ExpressRequestCtx} from "groupo-shared-service/types/express";
+import { GetNullableSQLString } from "../utils/sql";
 
 /**
  * verify if an `email` is actually the owner of `boardID`
@@ -185,3 +186,8 @@ const queryResultMapping = async (email: string, boardQueryResults: BoardQueryRe
 
     return Object.values(boards);
 };
+
+export const updateMemberTags = async(email: string, boardID: string, tags: string[]) => {
+    const query = `UPDATE member SET tags = ${GetNullableSQLString(JSON.stringify(tags))} WHERE member.board_id = '${boardID}' and member.email = '${email}';`;
+    await getManager().query(query);
+}

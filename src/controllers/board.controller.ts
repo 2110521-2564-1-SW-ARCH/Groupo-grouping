@@ -91,3 +91,15 @@ export const findBoard: express.Handler = catcher(async (req: express.Request, r
     json(res, newAPIResponse<BoardResponse>(StatusCodes.OK, await BoardService.findByID(ctx, getBoardID(req))));
     next();
 });
+
+/**
+ * add new members to a board (only owner)
+ */
+export const updateMemberTags: express.Handler = catcher(async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    const ctx = getExpressRequestContext<BoardInvitationRequest>(req);
+
+    await BoardService.updateMemberTags(ctx.email, req.params.boardID, req.body);
+
+    json(res, newAPIResponse<string>(StatusCodes.NO_CONTENT, ""));
+    next();
+});
