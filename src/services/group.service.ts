@@ -88,7 +88,7 @@ export const autoGroup = async (ctx: SocketIOCtx, boardID: string) => {
     let groupCapacity: {[k: string]: number} = {};
 
     for (let member of members) {
-        let member_tags = new Set(JSON.parse(member.tags || "[]"));
+        let member_tags = new Set(JSON.parse(member.autogroup_tags || "[]"));
 
         let maxScore = -1;
         let maxGroupId = null;

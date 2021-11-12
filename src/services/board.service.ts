@@ -123,9 +123,11 @@ export const listMembers = async (ctx: ExpressRequestCtx<undefined>, boardID: st
 export const listBoards = async (ctx: ExpressRequestCtx<undefined>): Promise<BoardResponse[]> => {
     const memberSubQuery = `SELECT * FROM member WHERE member.email = '${ctx.email}'`;
     const boardSubQuery = `SELECT board_id, owner, name, tags, updated_at FROM board NATURAL JOIN (${memberSubQuery}) as m`;
-    const query = `SELECT b.board_id, b.owner, b.name, b.tags, b.updated_at, g.group_id, g.name as group_name, g.description as group_description FROM (${boardSubQuery}) as b INNER JOIN \`group\` as g ON g.board_id = b.board_id`;
+    const query = `SELECT b.board_id, b.owner, b.name, b.tags, b.updated_at, g.group_id, g.name as group_name, g.description as group_description, g.tags as group_tags, g.capacity as group_capacity FROM (${boardSubQuery}) as b INNER JOIN \`group\` as g ON g.board_id = b.board_id`;
 
     const boardQueryResults: BoardQueryResult[] = await getManager().query(query);
+
+    console.log(boardQueryResults)
 
     return queryResultMapping(ctx.email, boardQueryResults);
 };

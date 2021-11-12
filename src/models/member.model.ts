@@ -7,7 +7,7 @@ export interface MemberQueryResult {
     board_id: string;
     group_id: string | null;
     tag: string | null;
-    tags: string | null;
+    autogroup_tags: string | null;
 }
 
 @Entity("member")
@@ -23,12 +23,12 @@ export class Member {
     group: Group;
 
     @Column("text", {nullable: true}) tag: string;
-    @Column("text", {nullable: true}) tags: string;
+    @Column("text", {nullable: true}) autogroup_tags: string;
 
     constructor(email: string, board: Board) {
         this.email = email;
         this.board = board;
         this.tag = null;
-        this.tags = "[]";
+        this.autogroup_tags = "[]";
     }
 }
