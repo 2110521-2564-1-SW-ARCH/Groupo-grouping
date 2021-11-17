@@ -10,5 +10,6 @@ boardRouter.get("/:boardID/members", BoardController.listMember);
 boardRouter.post("/:boardID/join", BoardController.join);
 boardRouter.post("/:boardID/invite", BoardController.addMember);
 boardRouter.put("/:boardID/member/tags", BoardController.updateMemberTags);
+boardRouter.get("/:boardID/member/tags", BoardController.getMemberTags);
 
 export default boardRouter;

@@ -93,7 +93,7 @@ export const findBoard: express.Handler = catcher(async (req: express.Request, r
 });
 
 /**
- * add new members to a board (only owner)
+ * Update tag of logged in user for that board
  */
 export const updateMemberTags: express.Handler = catcher(async (req: express.Request, res: express.Response, next: express.NextFunction) => {
     const ctx = getExpressRequestContext<BoardInvitationRequest>(req);
@@ -101,5 +101,17 @@ export const updateMemberTags: express.Handler = catcher(async (req: express.Req
     await BoardService.updateMemberTags(ctx.email, req.params.boardID, req.body);
 
     json(res, newAPIResponse<string>(StatusCodes.NO_CONTENT, ""));
+    next();
+});
+
+/**
+ * Get tag of logged in user for that board
+ */
+export const getMemberTags: express.Handler = catcher(async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    const ctx = getExpressRequestContext<BoardInvitationRequest>(req);
+
+    const tags = await BoardService.getMemberTags(ctx.email, req.params.boardID);
+
+    json(res, newAPIResponse<string[]>(StatusCodes.OK, tags));
     next();
 });
