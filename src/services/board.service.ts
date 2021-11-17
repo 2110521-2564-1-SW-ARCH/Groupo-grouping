@@ -190,6 +190,6 @@ const queryResultMapping = async (email: string, boardQueryResults: BoardQueryRe
 };
 
 export const updateMemberTags = async(email: string, boardID: string, tags: string[]) => {
-    const query = `UPDATE member SET tags = ${GetNullableSQLString(JSON.stringify(tags))} WHERE member.board_id = '${boardID}' and member.email = '${email}';`;
+    const query = `UPDATE member SET autogroup_tags = ${GetNullableSQLString(JSON.stringify(tags))} WHERE member.board_id = '${boardID}' and member.email = '${email}';`;
     await getManager().query(query);
 }
