@@ -127,8 +127,6 @@ export const listBoards = async (ctx: ExpressRequestCtx<undefined>): Promise<Boa
 
     const boardQueryResults: BoardQueryResult[] = await getManager().query(query);
 
-    console.log(boardQueryResults)
-
     return queryResultMapping(ctx.email, boardQueryResults);
 };
 
