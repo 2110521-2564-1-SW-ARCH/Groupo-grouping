@@ -90,16 +90,22 @@ export const autoGroup = async (ctx: SocketIOCtx, boardID: string) => {
     for (let member of members) {
         let member_tags = new Set(JSON.parse(member.autogroup_tags || "[]"));
 
+        // console.log(member_tags);
+
         let maxScore = -1;
         let maxGroupId = null;
 
         let groups: GroupResponse[] = shuffleArray<GroupResponse>(board.groups);
 
+        // console.log(groups);
+
         for (let group of groups) {
             if (!groupCapacity[group.groupID]) groupCapacity[group.groupID] = 0;
-            if (groupCapacity[group.groupID] >= group.capacity) continue;
+            if (group.capacity > 0 && groupCapacity[group.groupID] >= group.capacity) continue;
 
             let group_tags = new Set(group.tags);
+
+            // console.log(group_tags);
 
             let intersection = new Set([...member_tags].filter((x: string) => group_tags.has(x)));
 
@@ -112,7 +118,7 @@ export const autoGroup = async (ctx: SocketIOCtx, boardID: string) => {
         }
 
         if (maxGroupId) {
-            const query = `UPDATE member SET group_id = ${maxGroupId} WHERE member.board_id = '${boardID}' and member.email = '${member.email}';`;
+            const query = `UPDATE member SET group_id = ${GetNullableSQLString(maxGroupId)} WHERE member.board_id = ${GetNullableSQLString(boardID)} and member.email = ${GetNullableSQLString(member.email)};`;
             await getManager().query(query);
         }
     }
