@@ -4,6 +4,7 @@ import {LoggingGrpcClient} from "groupo-shared-service/grpc/client";
 import {handler as grpcHandler} from "groupo-shared-service/services/logger";
 import {SocketIOCtx} from "groupo-shared-service/types/socketio";
 import {GroupInfo} from "../services/interface";
+import { deleteBoard, leaveBoard } from "../services/board.service";
 
 export const TransitSocketEvent = "transit";
 export const TagSocketEvent = "tag";
@@ -60,6 +61,29 @@ export const groupHandlerBuilder = (ctx: SocketIOCtx) => {
                 GroupService.remove(ctx, groupID).catch(err => {
                     LoggingGrpcClient.error(ctx.logger.setError(err).message("cannot delete group").proto(), grpcHandler);
                 });
+                break;
+        }
+    };
+};
+
+export const boardHandlerBuilder = (ctx: SocketIOCtx) => {
+    // groupID can be an empty string for create event
+    // info is an JSON.stringify string for group info
+    return (action: "leave" | "delete", boardID: string) => {
+        ctx = {
+            ...ctx,
+            logger: ctx.logger.set("action", action).set("boardID", boardID)
+        };
+        switch (action) {
+            case "leave":
+                leaveBoard(ctx.email, ctx.boardID)
+                    .then(() => ctx.io.to(ctx.roomID).emit(GroupSocketEvent, "leaveBoard", boardID))
+                    .catch(err => LoggingGrpcClient.error(ctx.logger.setError(err).message("cannot leave board").proto(), grpcHandler))
+                break;
+            case "delete":
+                deleteBoard(ctx.email, ctx.boardID)
+                    .then(() => ctx.io.to(ctx.roomID).emit(GroupSocketEvent, "deleteBoard", boardID))
+                    .catch(err => LoggingGrpcClient.error(ctx.logger.setError(err).message("cannot leave board").proto(), grpcHandler))
                 break;
         }
     };

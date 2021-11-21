@@ -198,3 +198,13 @@ export const getMemberTags = async(email: string, boardID: string): Promise<stri
     if (results.length == 0) return []
     return JSON.parse(results[0].autogroup_tags);
 }
+
+export const leaveBoard = async(email: string, boardID: string) => {
+    const query = `DELETE FROM member WHERE member.board_id = ${GetNullableSQLString(boardID)} and member.email = ${GetNullableSQLString(email)};`;
+    await getManager().query(query);
+}
+
+export const deleteBoard = async(email: string, boardID: string) => {
+    const query = `DELETE FROM board WHERE board.board_id = ${GetNullableSQLString(boardID)} and board.owner = ${GetNullableSQLString(email)};`;
+    await getManager().query(query);
+}
