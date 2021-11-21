@@ -84,7 +84,7 @@ export const boardHandlerBuilder = (ctx: SocketIOCtx) => {
             case "delete":
                 deleteBoard(ctx.email, ctx.boardID)
                     .then(() => ctx.io.to(ctx.roomID).emit(BoardSocketEvent, "deleteBoard", boardID, ctx.email))
-                    .catch(err => LoggingGrpcClient.error(ctx.logger.setError(err).message("cannot leave board").proto(), grpcHandler))
+                    .catch(err => LoggingGrpcClient.error(ctx.logger.setError(err).message("cannot delete board").proto(), grpcHandler))
                 break;
         }
     };
