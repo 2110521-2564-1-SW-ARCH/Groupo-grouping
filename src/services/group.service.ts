@@ -88,14 +88,21 @@ export const autoGroup = async (ctx: SocketIOCtx, boardID: string) => {
     let groupCapacity: {[k: string]: number} = {};
 
     for (let member of members) {
-        let member_tags = new Set(JSON.parse(member.autogroup_tags || "[]"));
+        let member_tags = new Set<string>(JSON.parse(member.autogroup_tags || "[]"));
 
         // console.log(member_tags);
 
-        let maxScore = -1;
+        let maxScore = -100000000;
         let maxGroupId = null;
 
         let groups: GroupResponse[] = shuffleArray<GroupResponse>(board.groups);
+        let groupBalance: any = {}; // groupBalance[groupID][tag] = number
+
+        function getGroupBalance(groupID: string, tag: string): number {
+            if (!groupBalance[groupID]) return 0;
+            if (!groupBalance[groupID][tag]) return 0;
+            return groupBalance[groupID][tag];
+        }
 
         // console.log(groups);
 
@@ -109,7 +116,14 @@ export const autoGroup = async (ctx: SocketIOCtx, boardID: string) => {
 
             let intersection = new Set([...member_tags].filter((x: string) => group_tags.has(x)));
 
-            let score = intersection.size;
+            let score = intersection.size > 0 ? 100000000 : 0;
+
+            score -= groupCapacity[group.groupID];
+            
+            for (let tag of member_tags) {
+                let balance = getGroupBalance(group.groupID, tag);
+                score -= balance * 1000;
+            }
 
             if (score > maxScore) {
                 maxScore = score;
@@ -118,8 +132,14 @@ export const autoGroup = async (ctx: SocketIOCtx, boardID: string) => {
         }
 
         if (maxGroupId) {
+            for (let tag of member_tags) {
+                if (!groupBalance[maxGroupId]) groupBalance[maxGroupId] = {};
+                if (!groupBalance[maxGroupId] && !groupBalance[maxGroupId][tag]) groupBalance[maxGroupId][tag] = 0;
+                groupBalance[maxGroupId][tag]++;
+            }
             const query = `UPDATE member SET group_id = ${GetNullableSQLString(maxGroupId)} WHERE member.board_id = ${GetNullableSQLString(boardID)} and member.email = ${GetNullableSQLString(member.email)};`;
             await getManager().query(query);
+            groupCapacity[maxGroupId]++;
         }
     }
 
