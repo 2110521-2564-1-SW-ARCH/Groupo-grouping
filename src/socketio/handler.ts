@@ -9,6 +9,7 @@ import { deleteBoard, leaveBoard } from "../services/board.service";
 export const TransitSocketEvent = "transit";
 export const TagSocketEvent = "tag";
 export const GroupSocketEvent = "group";
+export const BoardSocketEvent = "board";
 export const ChatSocketEvent = "chat";
 export const JoinSocketIOEvent = "join";
 export const AutoGroupSocketEvent = "autogroup";
@@ -77,12 +78,12 @@ export const boardHandlerBuilder = (ctx: SocketIOCtx) => {
         switch (action) {
             case "leave":
                 leaveBoard(ctx.email, ctx.boardID)
-                    .then(() => ctx.io.to(ctx.roomID).emit(GroupSocketEvent, "leaveBoard", boardID))
+                    .then(() => ctx.io.to(ctx.roomID).emit(BoardSocketEvent, "leaveBoard", boardID, ctx.email))
                     .catch(err => LoggingGrpcClient.error(ctx.logger.setError(err).message("cannot leave board").proto(), grpcHandler))
                 break;
             case "delete":
                 deleteBoard(ctx.email, ctx.boardID)
-                    .then(() => ctx.io.to(ctx.roomID).emit(GroupSocketEvent, "deleteBoard", boardID))
+                    .then(() => ctx.io.to(ctx.roomID).emit(BoardSocketEvent, "deleteBoard", boardID, ctx.email))
                     .catch(err => LoggingGrpcClient.error(ctx.logger.setError(err).message("cannot leave board").proto(), grpcHandler))
                 break;
         }
