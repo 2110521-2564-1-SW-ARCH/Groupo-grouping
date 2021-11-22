@@ -78,9 +78,20 @@ export const transit = async (ctx: SocketIOCtx, groupID: string | null, position
     LoggingGrpcClient.info(ctx.logger.message("transit user successfully").proto(), grpcHandler);
 };
 
+function autoGroupMemberTags(member: any) {
+    return JSON.parse(member.autogroup_tags || "[]");
+}
+
+function autoGroupMemberScore(member: any) {
+    let tags = autoGroupMemberTags(member);
+    if (tags.length == 0) return 1000000;
+    return tags.length;
+}
+
 export const autoGroup = async (ctx: SocketIOCtx, boardID: string) => {
     let board = await BoardService.findByID(ctx, boardID);
     let members: MemberQueryResult[] = shuffleArray<MemberQueryResult>(await BoardService.getMembers(boardID));
+    members.sort((a, b) => autoGroupMemberScore(a) - autoGroupMemberScore(b));
 
     const query = `UPDATE member SET group_id = null WHERE member.board_id = '${boardID}';`;
     await getManager().query(query);
@@ -88,7 +99,7 @@ export const autoGroup = async (ctx: SocketIOCtx, boardID: string) => {
     let groupCapacity: {[k: string]: number} = {};
 
     for (let member of members) {
-        let member_tags = new Set<string>(JSON.parse(member.autogroup_tags || "[]"));
+        let member_tags = new Set<string>(autoGroupMemberTags(member));
 
         // console.log(member_tags);
 
