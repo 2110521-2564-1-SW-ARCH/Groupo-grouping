@@ -30,6 +30,8 @@ export class Board {
     @OneToMany(() => Member, member => member.board, {cascade: true})
     members: Promise<Member[]>;
 
+    @Column({type: "boolean", name: "is_delete", default: false}) isDelete: boolean;
+
     @CreateDateColumn({
         name: "created_at",
         type: "timestamp",

@@ -122,7 +122,7 @@ export const listMembers = async (ctx: ExpressRequestCtx<undefined>, boardID: st
  */
 export const listBoards = async (ctx: ExpressRequestCtx<undefined>): Promise<BoardResponse[]> => {
     const memberSubQuery = `SELECT * FROM member WHERE member.email = '${ctx.email}'`;
-    const boardSubQuery = `SELECT board_id, owner, name, tags, updated_at FROM board NATURAL JOIN (${memberSubQuery}) as m`;
+    const boardSubQuery = `SELECT board_id, owner, name, tags, updated_at FROM board NATURAL JOIN (${memberSubQuery}) as m WHERE board.is_delete = 0`;
     const query = `SELECT b.board_id, b.owner, b.name, b.tags, b.updated_at, g.group_id, g.name as group_name, g.description as group_description, g.tags as group_tags, g.capacity as group_capacity FROM (${boardSubQuery}) as b INNER JOIN \`group\` as g ON g.board_id = b.board_id`;
 
     const boardQueryResults: BoardQueryResult[] = await getManager().query(query);
@@ -156,6 +156,7 @@ const queryResultMapping = async (email: string, boardQueryResults: BoardQueryRe
             name: result.group_name,
             description: result.group_description,
             members: [],
+            membersObj: [],
             tags: JSON.parse(result.group_tags || "[]"),
             capacity: result.group_capacity,
         });
@@ -166,6 +167,10 @@ const queryResultMapping = async (email: string, boardQueryResults: BoardQueryRe
         const members = await getMembers(board.boardID);
         for (const m of members.filter(e => e.group_id !== null)) {
             board.groups.find(g => g.groupID === m.group_id).members.push(m.email);
+            board.groups.find(g => g.groupID === m.group_id).membersObj.push({
+                email: m.email,
+                tags: JSON.parse(m.autogroup_tags || "[]"),
+            });
         }
         board.unAssignedMember = members.filter(e => e.group_id === null).map(e => e.email);
 
@@ -205,6 +210,6 @@ export const leaveBoard = async(email: string, boardID: string) => {
 }
 
 export const deleteBoard = async(email: string, boardID: string) => {
-    const query = `DELETE FROM board WHERE board.board_id = ${GetNullableSQLString(boardID)} and board.owner = ${GetNullableSQLString(email)};`;
+    const query = `UPDATE board SET is_delete = 1 WHERE board.board_id = ${GetNullableSQLString(boardID)} and board.owner = ${GetNullableSQLString(email)};`;
     await getManager().query(query);
 }
