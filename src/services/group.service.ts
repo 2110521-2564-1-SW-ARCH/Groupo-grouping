@@ -97,17 +97,17 @@ export const autoGroup = async (ctx: SocketIOCtx, boardID: string) => {
     await getManager().query(query);
 
     let groupCapacity: {[k: string]: number} = {};
+    let groupBalance: any = {}; // groupBalance[groupID][tag] = number
 
     for (let member of members) {
         let member_tags = new Set<string>(autoGroupMemberTags(member));
 
-        // console.log(member_tags);
+        console.log(member_tags);
 
         let maxScore = -100000000;
         let maxGroupId = null;
 
         let groups: GroupResponse[] = shuffleArray<GroupResponse>(board.groups);
-        let groupBalance: any = {}; // groupBalance[groupID][tag] = number
 
         function getGroupBalance(groupID: string, tag: string): number {
             if (!groupBalance[groupID]) return 0;
@@ -130,10 +130,13 @@ export const autoGroup = async (ctx: SocketIOCtx, boardID: string) => {
             let score = intersection.size > 0 ? 100000000 : 0;
 
             score -= groupCapacity[group.groupID];
+
+            // console.log(groupBalance)
             
-            for (let tag of member_tags) {
+            for (let tag of [...member_tags]) {
                 let balance = getGroupBalance(group.groupID, tag);
                 score -= balance * 1000;
+                if (balance > 0) console.log('FOUND COMMON', tag)
             }
 
             if (score > maxScore) {
@@ -143,9 +146,10 @@ export const autoGroup = async (ctx: SocketIOCtx, boardID: string) => {
         }
 
         if (maxGroupId) {
-            for (let tag of member_tags) {
+            for (let tag of [...member_tags]) {
+                // console.log(maxGroupId)
                 if (!groupBalance[maxGroupId]) groupBalance[maxGroupId] = {};
-                if (!groupBalance[maxGroupId] && !groupBalance[maxGroupId][tag]) groupBalance[maxGroupId][tag] = 0;
+                if (!groupBalance[maxGroupId][tag]) groupBalance[maxGroupId][tag] = 0;
                 groupBalance[maxGroupId][tag]++;
             }
             const query = `UPDATE member SET group_id = ${GetNullableSQLString(maxGroupId)} WHERE member.board_id = ${GetNullableSQLString(boardID)} and member.email = ${GetNullableSQLString(member.email)};`;
