@@ -147,6 +147,7 @@ const queryResultMapping = async (email: string, boardQueryResults: BoardQueryRe
                 unTaggedMember: [],
                 groups: [],
                 unAssignedMember: [],
+                unAssignedMemberObj: [],
                 totalGroups: 0,
                 totalMembers: 0,
             };
@@ -173,6 +174,10 @@ const queryResultMapping = async (email: string, boardQueryResults: BoardQueryRe
             });
         }
         board.unAssignedMember = members.filter(e => e.group_id === null).map(e => e.email);
+        board.unAssignedMemberObj = members.filter(e => e.group_id === null).map(e => ({
+            email: e.email,
+            tags: JSON.parse(e.autogroup_tags || "[]"),
+        }));
 
         for (const m of members.filter(e => e.tag !== null)) {
             console.log(m);
